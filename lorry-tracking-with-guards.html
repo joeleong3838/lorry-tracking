@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorry Tracking System - Guard Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        /* Navigation */
+        .nav {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .nav-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1a1a2e;
+        }
+        
+        .guard-status {
+            background: #dcfce7;
+            color: #166534;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .guard-status.inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .nav-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+        
+        .nav-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            background: transparent;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        
+        .nav-btn:hover { background: rgba(102, 126, 234, 0.1); }
+        .nav-btn.active { background: #667eea; color: white; }
+        
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        
+        .card-title { font-size: 24px; font-weight: 700; }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5568d3; }
+        .btn-secondary { background: white; border: 2px solid #e2e8f0; color: #64748b; }
+        .btn-secondary:hover { background: #f8fafc; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-small { padding: 8px 16px; font-size: 13px; }
+        
+        /* Stats Grid */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .stat-icon { font-size: 32px; margin-bottom: 12px; }
+        .stat-value { font-size: 36px; font-weight: 800; margin-bottom: 4px; }
+        .stat-label { font-size: 14px; font-weight: 600; color: #64748b; }
+        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+        }
+        
+        tr:hover { background: #f8fafc; }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        
+        .badge-plate { background: #f1f5f9; color: #1e293b; }
+        .badge-purpose { background: #dbeafe; color: #1e40af; }
+        .badge-in { background: #dcfce7; color: #166534; }
+        .badge-out { background: #f1f5f9; color: #475569; }
+        .badge-day { background: #fef3c7; color: #92400e; }
+        .badge-night { background: #ddd6fe; color: #5b21b6; }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal.show { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .modal-title { font-size: 24px; font-weight: 700; }
+        
+        .close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+        
+        /* Form */
+        .form-group { margin-bottom: 20px; }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        
+        .required { color: #ef4444; }
+        
+        /* Grid layouts */
+        .driver-grid,
+        .guard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        
+        .item-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        
+        .item-card-header {
+            margin-bottom: 16px;
+            padding-right: 40px;
+        }
+        
+        .item-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .item-card p {
+            color: #64748b;
+            font-size: 14px;
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .info-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        .info-value {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            max-width: 400px;
+        }
+        
+        .notification.show { display: flex; }
+        .notification.error { background: #ef4444; }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        
+        .empty-icon { font-size: 64px; opacity: 0.3; margin-bottom: 16px; }
+        
+        /* Hidden */
+        .hidden { display: none !important; }
+        
+        /* QR Code */
+        .qr-container {
+            border: 3px solid #667eea;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin: 24px 0;
+        }
+        
+        /* Report selector */
+        .report-selector {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .report-btn {
+            flex: 1;
+            min-width: 200px;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .report-btn:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+        
+        .report-btn.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .report-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1e293b;
+        }
+        
+        .report-desc {
+            font-size: 12px;
+            color: #64748b;
+        }
+        
+        /* Admin panel */
+        .admin-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: #7c3aed;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            z-index: 100;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav { padding: 12px 16px; }
+            .nav-title { font-size: 18px; }
+            .card { padding: 20px; }
+            .modal-content { padding: 24px; }
+            .stats { grid-template-columns: 1fr; }
+            table { font-size: 12px; }
+            th, td { padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <div class="nav">
+        <div class="nav-title">
+            🚛 Lorry Tracking System
+        </div>
+        
+        <div id="guardStatusBadge" class="guard-status inactive">
+            ⚠️ No Guard On Duty
+        </div>
+        
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
+            <button class="nav-btn" onclick="showView('drivers')">Drivers</button>
+            <button class="nav-btn" onclick="showView('logs')">Logs</button>
+            <button class="nav-btn" onclick="showView('reports')">Reports</button>
+            <button class="nav-btn" onclick="showView('shift')">Shift</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Dashboard View -->
+        <div id="dashboard-view">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="stat-onsite">0</div>
+                    <div class="stat-label">Currently On-Site</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🚛</div>
+                    <div class="stat-value" id="stat-drivers">0</div>
+                    <div class="stat-label">Total Drivers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-value" id="stat-today">0</div>
+                    <div class="stat-label">Today's Visits</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👮</div>
+                    <div class="stat-value" id="stat-guards">0</div>
+                    <div class="stat-label">Guards On Duty</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Currently On-Site</h2>
+                    <button class="btn btn-primary" onclick="exportQuickReport()">
+                        📥 Quick Export
+                    </button>
+                </div>
+                <div id="onsite-table"></div>
+            </div>
+        </div>
+
+        <!-- Drivers View -->
+        <div id="drivers-view" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Driver Management</h2>
+                    <button class="btn btn-primary" onclick="openModal('addDriverModal')">
+                        ➕ Add Driver
+                    </button>
+                </div>
+                <div id="drivers-list" class="driver-grid"></div>
+            </div>
+        </div>
+
+        <!-- Logs View -->
+        <div id="logs-view" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Visit Logs</h2>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <input type="date" id="logDateFilter" class="btn btn-secondary btn-small">
+                        <button class="btn btn-secondary btn-small" onclick="clearLogFilters()">Clear</button>
+                    </div>
+                </div>
+                <div id="logs-table"></div>
+            </div>
+        </div>
+
+        <!-- Reports View -->
+        <div id="reports-view" class="hidden">
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 24px;">Generate Reports</h2>
+                
+                <div class="report-selector">
+                    <div class="report-btn active" onclick="selectReport('shift')">
+                        <div class="report-title">📊 Shift Summary Report</div>
+                        <div class="report-desc">Guards, visitors, and shift activities</div>
+                    </div>
+                    <div class="report-btn" onclick="selectReport('guard')">
+                        <div class="report-title">👮 Guard Activity Report</div>
+                        <div class="report-desc">Individual guard performance & stats</div>
+                    </div>
+                    <div class="report-btn" onclick="selectReport('daily')">
+                        <div class="report-title">📅 Daily Operations Report</div>
+                        <div class="report-desc">Complete daily activities log</div>
+                    </div>
+                    <div class="report-btn" onclick="selectReport('duration')">
+                        <div class="report-title">⏱️ Visitor Duration Report</div>
+                        <div class="report-desc">Time on-site analysis by shift</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Date Range</label>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <input type="date" id="reportStartDate" style="flex: 1; min-width: 150px;">
+                        <input type="date" id="reportEndDate" style="flex: 1; min-width: 150px;">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" onclick="generateReport()" style="width: 100%; margin-top: 20px;">
+                    📥 Generate & Download Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Shift Management View -->
+        <div id="shift-view" class="hidden">
+            <div class="card">
+                <h2 class="card-title" style="margin-bottom: 24px;">Shift Management</h2>
+                
+                <div id="activeShifts" style="margin-bottom: 32px;"></div>
+                
+                <div style="display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap;">
+                    <button class="btn btn-success" onclick="openModal('startShiftModal')">
+                        ▶️ Start Shift
+                    </button>
+                    <button class="btn btn-danger" onclick="endShift()">
+                        ⏹️ End My Shift
+                    </button>
+                    <button class="btn btn-secondary" onclick="openModal('shiftHistoryModal')">
+                        📜 Shift History
+                    </button>
+                </div>
+
+                <div id="myShiftStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel (Hidden - access via triple-click on logo) -->
+    <div id="admin-panel" class="hidden">
+        <div class="admin-indicator">ADMIN MODE</div>
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">🔒 Admin Panel</h2>
+                    <button class="btn btn-danger btn-small" onclick="exitAdminMode()">Exit Admin</button>
+                </div>
+                
+                <div style="margin-bottom: 32px;">
+                    <h3 style="margin-bottom: 16px;">Guard Management</h3>
+                    <button class="btn btn-primary" onclick="openModal('addGuardModal')">
+                        ➕ Add Guard
+                    </button>
+                </div>
+
+                <div id="guards-list" class="guard-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Add Driver Modal -->
+    <div id="addDriverModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Driver</h2>
+                <button class="close-btn" onclick="closeModal('addDriverModal')">×</button>
+            </div>
+            <form id="addDriverForm" onsubmit="addDriver(event)">
+                <div class="form-group">
+                    <label>Driver Name <span class="required">*</span></label>
+                    <input type="text" name="name" placeholder="John Tan" required>
+                </div>
+                <div class="form-group">
+                    <label>Lorry Plate <span class="required">*</span></label>
+                    <input type="text" name="lorryPlate" placeholder="WXY1234A" required>
+                </div>
+                <div class="form-group">
+                    <label>Company <span class="required">*</span></label>
+                    <input type="text" name="company" placeholder="ABC Logistics" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" name="phone" placeholder="+60 12-345 6789">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addDriverModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Driver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Guard Modal -->
+    <div id="addGuardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Guard</h2>
+                <button class="close-btn" onclick="closeModal('addGuardModal')">×</button>
+            </div>
+            <form id="addGuardForm" onsubmit="addGuard(event)">
+                <div class="form-group">
+                    <label>Guard Name <span class="required">*</span></label>
+                    <input type="text" name="name" placeholder="Ahmad bin Hassan" required>
+                </div>
+                <div class="form-group">
+                    <label>Badge ID</label>
+                    <input type="text" name="badgeId" placeholder="GRD001">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addGuardModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Guard</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Start Shift Modal -->
+    <div id="startShiftModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Start Shift</h2>
+                <button class="close-btn" onclick="closeModal('startShiftModal')">×</button>
+            </div>
+            <form id="startShiftForm" onsubmit="startShift(event)">
+                <div class="form-group">
+                    <label>Select Your Name <span class="required">*</span></label>
+                    <select name="guardId" id="guardSelect" required>
+                        <option value="">-- Select Guard --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Shift Type <span class="required">*</span></label>
+                    <select name="shiftType" required>
+                        <option value="">-- Select Shift --</option>
+                        <option value="Day">Day Shift (7am - 7pm)</option>
+                        <option value="Night">Night Shift (7pm - 7am)</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal('startShiftModal')">Cancel</button>
+                    <button type="submit" class="btn btn-success" style="flex: 1;">Start Shift</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- QR Code & Check-in Modal -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="qrDriverName"></h2>
+                <button class="close-btn" onclick="closeModal('qrModal')">×</button>
+            </div>
+            <div id="qrDriverInfo"></div>
+            <div class="qr-container" id="qrCode"></div>
+            
+            <div class="form-group">
+                <label>Guard Processing <span class="required">*</span></label>
+                <select id="processingGuard" required>
+                    <option value="">-- Select Your Name --</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Purpose of Visit <span class="required">*</span></label>
+                <select id="visitPurpose" required>
+                    <option value="">-- Select Purpose --</option>
+                    <option value="Delivery">Delivery</option>
+                    <option value="Pickup">Pickup</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Installation">Installation</option>
+                    <option value="Collection">Collection</option>
+                    <option value="Raw Material">Raw Material</option>
+                    <option value="Finished Goods">Finished Goods</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('qrModal')">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="processCheckIn()">✓ Check In/Out</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        
+        // IMPORTANT: Replace with your Supabase credentials
+        const SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIxOTAsImV4cCI6MjA4NjE5ODE5MH0.bTt1PHWCuRPvtWeFA61t6VqshT9uBIiwiFuMrFu9iGc';
+        
+        // Initialize Supabase client
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // ============================================
+        // STATE MANAGEMENT
+        // ============================================
+        
+        let drivers = [];
+        let guards = [];
+        let visitLogs = [];
+        let activeShifts = [];
+        let currentDriver = null;
+        let isAdminMode = false;
+        let selectedReportType = 'shift';
+        
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        
+        async function init() {
+            await loadAllData();
+            updateAllUI();
+            setupAdminAccess();
+            setDefaultDates();
+        }
+        
+        function setupAdminAccess() {
+            // Triple-click on logo to enter admin mode
+            const logo = document.querySelector('.nav-title');
+            let clickCount = 0;
+            let clickTimer = null;
+            
+            logo.addEventListener('click', () => {
+                clickCount++;
+                if (clickCount === 1) {
+                    clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
+                } else if (clickCount === 3) {
+                    clearTimeout(clickTimer);
+                    clickCount = 0;
+                    const password = prompt('Enter admin password:');
+                    if (password === 'admin123') { // Change this in production!
+                        enterAdminMode();
+                    } else if (password !== null) {
+                        showNotification('Invalid password', 'error');
+                    }
+                }
+            });
+        }
+        
+        function enterAdminMode() {
+            isAdminMode = true;
+            document.getElementById('admin-panel').classList.remove('hidden');
+            document.querySelectorAll('#dashboard-view, #drivers-view, #logs-view, #reports-view, #shift-view').forEach(v => v.classList.add('hidden'));
+            showNotification('Admin mode activated');
+        }
+        
+        function exitAdminMode() {
+            isAdminMode = false;
+            document.getElementById('admin-panel').classList.add('hidden');
+            showView('dashboard');
+        }
+        
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            document.getElementById('reportStartDate').value = weekAgo;
+            document.getElementById('reportEndDate').value = today;
+        }
+        
+        // ============================================
+        // DATA LOADING
+        // ============================================
+        
+        async function loadAllData() {
+            try {
+                await Promise.all([
+                    loadDrivers(),
+                    loadGuards(),
+                    loadVisitLogs(),
+                    loadActiveShifts()
+                ]);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showNotification('Error loading data', 'error');
+            }
+        }
+        
+        async function loadDrivers() {
+            const { data, error } = await supabase
+                .from('drivers')
+                .select('*')
+                .eq('is_active', true)
+                .order('name');
+            
+            if (error) throw error;
+            drivers = data || [];
+        }
+        
+        async function loadGuards() {
+            const { data, error } = await supabase
+                .from('guards')
+                .select('*')
+                .eq('is_active', true)
+                .order('name');
+            
+            if (error) throw error;
+            guards = data || [];
+        }
+        
+        async function loadVisitLogs() {
+            const { data, error } = await supabase
+                .from('visit_logs')
+                .select('*')
+                .order('check_in_time', { ascending: false })
+                .limit(100);
+            
+            if (error) throw error;
+            visitLogs = data || [];
+        }
+        
+        async function loadActiveShifts() {
+            const { data, error } = await supabase
+                .from('guard_shifts')
+                .select(`
+                    *,
+                    guards (name, badge_id)
+                `)
+                .is('shift_end', null);
+            
+            if (error) throw error;
+            activeShifts = data || [];
+        }
+        
+        // ============================================
+        // UI UPDATES
+        // ============================================
+        
+        function updateAllUI() {
+            updateStats();
+            updateOnsiteTable();
+            updateDriversList();
+            updateGuardsList();
+            updateLogsTable();
+            updateGuardStatus();
+            updateActiveShiftsDisplay();
+            updateMyShiftStats();
+        }
+        
+        function updateStats() {
+            const onsite = visitLogs.filter(log => log.status === 'in').length;
+            const today = visitLogs.filter(log => {
+                const logDate = new Date(log.check_in_time).toDateString();
+                return logDate === new Date().toDateString();
+            }).length;
+            
+            document.getElementById('stat-onsite').textContent = onsite;
+            document.getElementById('stat-drivers').textContent = drivers.length;
+            document.getElementById('stat-today').textContent = today;
+            document.getElementById('stat-guards').textContent = activeShifts.length;
+        }
+        
+        function updateGuardStatus() {
+            const badge = document.getElementById('guardStatusBadge');
+            if (activeShifts.length === 0) {
+                badge.className = 'guard-status inactive';
+                badge.innerHTML = '⚠️ No Guard On Duty';
+            } else {
+                badge.className = 'guard-status';
+                const names = activeShifts.map(s => s.guards.name).join(', ');
+                badge.innerHTML = `✅ On Duty: ${names}`;
+            }
+        }
+        
+        function updateOnsiteTable() {
+            const container = document.getElementById('onsite-table');
+            const onsite = visitLogs.filter(log => log.status === 'in');
+            
+            if (onsite.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🚛</div>
+                        <p style="font-size: 16px; font-weight: 600;">No lorries currently on-site</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Driver</th>
+                                <th>Plate</th>
+                                <th>Company</th>
+                                <th>Purpose</th>
+                                <th>Check In</th>
+                                <th>Duration</th>
+                                <th>Guard</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${onsite.map(log => `
+                                <tr>
+                                    <td>${log.driver_name}</td>
+                                    <td><span class="badge badge-plate">${log.lorry_plate}</span></td>
+                                    <td>${log.company}</td>
+                                    <td><span class="badge badge-purpose">${log.purpose}</span></td>
+                                    <td>${formatTime(log.check_in_time)}</td>
+                                    <td style="font-weight: 600; color: #667eea;">${calculateDuration(log.check_in_time)}</td>
+                                    <td>${log.checked_in_by_guard_name || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        function updateDriversList() {
+            const container = document.getElementById('drivers-list');
+            
+            if (drivers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">🚛</div>
+                        <h3 style="font-size: 24px; margin: 20px 0 12px;">No drivers registered</h3>
+                        <button class="btn btn-primary" onclick="openModal('addDriverModal')">Add First Driver</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = drivers.map(driver => `
+                <div class="item-card">
+                    <button class="delete-btn" onclick="deleteDriver('${driver.id}')">×</button>
+                    <div class="item-card-header">
+                        <h3>${driver.name}</h3>
+                        <p>${driver.company}</p>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <div class="info-row">
+                            <span class="info-label">Plate</span>
+                            <span class="info-value">${driver.lorry_plate}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value">${driver.phone || 'N/A'}</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="openQRModal('${driver.id}')">
+                        📱 View QR & Check In
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function updateGuardsList() {
+            const container = document.getElementById('guards-list');
+            
+            if (guards.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-icon">👮</div>
+                        <h3 style="font-size: 24px; margin: 20px 0 12px;">No guards registered</h3>
+                        <button class="btn btn-primary" onclick="openModal('addGuardModal')">Add First Guard</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = guards.map(guard => `
+                <div class="item-card">
+                    <button class="delete-btn" onclick="deleteGuard('${guard.id}')">×</button>
+                    <div class="item-card-header">
+                        <h3>${guard.name}</h3>
+                        <p>Badge: ${guard.badge_id || 'N/A'}</p>
+                    </div>
+                    <div style="margin-top: 16px;">
+                        ${activeShifts.some(s => s.guard_id === guard.id) ? 
+                            '<span class="badge badge-in">Currently On Duty</span>' : 
+                            '<span class="badge badge-out">Off Duty</span>'
+                        }
+                    </div>
+                </div>
+            `).join('');
+            
+            // Update guard selects
+            updateGuardSelects();
+        }
+        
+        function updateGuardSelects() {
+            const guardSelect = document.getElementById('guardSelect');
+            const processingGuard = document.getElementById('processingGuard');
+            
+            const guardOptions = guards.map(g => 
+                `<option value="${g.id}">${g.name}</option>`
+            ).join('');
+            
+            guardSelect.innerHTML = '<option value="">-- Select Guard --</option>' + guardOptions;
+            
+            // For processing guard, only show active shift guards
+            const activeGuardOptions = activeShifts.map(s => 
+                `<option value="${s.guard_id}">${s.guards.name}</option>`
+            ).join('');
+            
+            processingGuard.innerHTML = '<option value="">-- Select Your Name --</option>' + activeGuardOptions;
+        }
+        
+        function updateLogsTable() {
+            const container = document.getElementById('logs-table');
+            const dateFilter = document.getElementById('logDateFilter').value;
+            
+            let filteredLogs = visitLogs;
+            if (dateFilter) {
+                filteredLogs = visitLogs.filter(log => {
+                    const logDate = new Date(log.check_in_time).toISOString().split('T')[0];
+                    return logDate === dateFilter;
+                });
+            }
+            
+            if (filteredLogs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p style="font-size: 16px; font-weight: 600;">No logs found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Driver</th>
+                                <th>Plate</th>
+                                <th>Company</th>
+                                <th>Purpose</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Duration</th>
+                                <th>Guard</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredLogs.map(log => `
+                                <tr>
+                                    <td>${log.driver_name}</td>
+                                    <td><span class="badge badge-plate">${log.lorry_plate}</span></td>
+                                    <td>${log.company}</td>
+                                    <td>${log.purpose}</td>
+                                    <td style="font-size: 12px;">${formatDateTime(log.check_in_time)}</td>
+                                    <td style="font-size: 12px;">${log.check_out_time ? formatDateTime(log.check_out_time) : '-'}</td>
+                                    <td>${log.check_out_time ? calculateDuration(log.check_in_time, log.check_out_time) : '-'}</td>
+                                    <td style="font-size: 12px;">${log.checked_in_by_guard_name || '-'}</td>
+                                    <td><span class="badge badge-${log.status}">${log.status === 'in' ? '● ON-SITE' : 'DEPARTED'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        function updateActiveShiftsDisplay() {
+            const container = document.getElementById('activeShifts');
+            
+            if (activeShifts.length === 0) {
+                container.innerHTML = `
+                    <div style="background: #fef3c7; padding: 16px; border-radius: 12px; text-align: center;">
+                        <p style="font-weight: 600; color: #92400e;">No active shifts. Click "Start Shift" to begin.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <h3 style="margin-bottom: 16px;">Active Shifts</h3>
+                <div class="guard-grid">
+                    ${activeShifts.map(shift => `
+                        <div class="item-card">
+                            <h3>${shift.guards.name}</h3>
+                            <p>${shift.guards.badge_id || 'No badge'}</p>
+                            <div style="margin-top: 16px;">
+                                <span class="badge badge-${shift.shift_type.toLowerCase()}">${shift.shift_type} Shift</span>
+                                <p style="margin-top: 8px; font-size: 13px; color: #64748b;">
+                                    Started: ${formatTime(shift.shift_start)}
+                                </p>
+                                <p style="font-size: 13px; color: #64748b;">
+                                    Duration: ${calculateDuration(shift.shift_start)}
+                                </p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function updateMyShiftStats() {
+            const container = document.getElementById('myShiftStats');
+            
+            if (activeShifts.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            // Calculate stats for active shifts
+            const stats = activeShifts.map(shift => {
+                const shiftLogs = visitLogs.filter(log => log.guard_shift_id === shift.id);
+                const processed = shiftLogs.length;
+                const currentlyOnSite = shiftLogs.filter(log => log.status === 'in').length;
+                
+                return `
+                    <div class="card" style="background: #f8fafc;">
+                        <h3 style="margin-bottom: 16px;">${shift.guards.name}'s Shift Stats</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
+                            <div>
+                                <div style="font-size: 24px; font-weight: 800; color: #667eea;">${processed}</div>
+                                <div style="font-size: 13px; color: #64748b;">Visitors Processed</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 24px; font-weight: 800; color: #10b981;">${currentlyOnSite}</div>
+                                <div style="font-size: 13px; color: #64748b;">Currently On-Site</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = stats;
+        }
+        
+        // ============================================
+        // DRIVER MANAGEMENT
+        // ============================================
+        
+        async function addDriver(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            try {
+                const driverId = 'DRV' + Date.now();
+                const { data, error } = await supabase
+                    .from('drivers')
+                    .insert([{
+                        driver_id: driverId,
+                        name: formData.get('name'),
+                        lorry_plate: formData.get('lorryPlate').toUpperCase(),
+                        company: formData.get('company'),
+                        phone: formData.get('phone') || null
+                    }])
+                    .select();
+                
+                if (error) throw error;
+                
+                await loadDrivers();
+                updateDriversList();
+                closeModal('addDriverModal');
+                form.reset();
+                showNotification('Driver added successfully');
+            } catch (error) {
+                console.error('Error adding driver:', error);
+                showNotification('Error adding driver', 'error');
+            }
+        }
+        
+        async function deleteDriver(id) {
+            if (!confirm('Delete this driver? This cannot be undone.')) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('drivers')
+                    .update({ is_active: false })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                await loadDrivers();
+                updateDriversList();
+                showNotification('Driver removed');
+            } catch (error) {
+                console.error('Error deleting driver:', error);
+                showNotification('Error deleting driver', 'error');
+            }
+        }
+        
+        // ============================================
+        // GUARD MANAGEMENT
+        // ============================================
+        
+        async function addGuard(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            try {
+                const { data, error } = await supabase
+                    .from('guards')
+                    .insert([{
+                        name: formData.get('name'),
+                        badge_id: formData.get('badgeId') || null
+                    }])
+                    .select();
+                
+                if (error) throw error;
+                
+                await loadGuards();
+                updateGuardsList();
+                closeModal('addGuardModal');
+                form.reset();
+                showNotification('Guard added successfully');
+            } catch (error) {
+                console.error('Error adding guard:', error);
+                showNotification('Error adding guard', 'error');
+            }
+        }
+        
+        async function deleteGuard(id) {
+            if (!confirm('Delete this guard? This cannot be undone.')) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('guards')
+                    .update({ is_active: false })
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                await loadGuards();
+                updateGuardsList();
+                showNotification('Guard removed');
+            } catch (error) {
+                console.error('Error deleting guard:', error);
+                showNotification('Error deleting guard', 'error');
+            }
+        }
+        
+        // ============================================
+        // SHIFT MANAGEMENT
+        // ============================================
+        
+        async function startShift(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const guardId = formData.get('guardId');
+            const shiftType = formData.get('shiftType');
+            
+            // Check if guard already has active shift
+            const existingShift = activeShifts.find(s => s.guard_id === guardId);
+            if (existingShift) {
+                showNotification('You already have an active shift', 'error');
+                return;
+            }
+            
+            try {
+                const { data, error } = await supabase
+                    .from('guard_shifts')
+                    .insert([{
+                        guard_id: guardId,
+                        shift_type: shiftType,
+                        shift_start: new Date().toISOString()
+                    }])
+                    .select();
+                
+                if (error) throw error;
+                
+                await loadActiveShifts();
+                updateAllUI();
+                closeModal('startShiftModal');
+                form.reset();
+                showNotification('Shift started successfully');
+            } catch (error) {
+                console.error('Error starting shift:', error);
+                showNotification('Error starting shift', 'error');
+            }
+        }
+        
+        async function endShift() {
+            if (activeShifts.length === 0) {
+                showNotification('No active shifts to end', 'error');
+                return;
+            }
+            
+            // If multiple guards, ask which one
+            let shiftToEnd;
+            if (activeShifts.length === 1) {
+                shiftToEnd = activeShifts[0];
+            } else {
+                const guardName = prompt('Which guard is ending shift? Enter name:\n' + 
+                    activeShifts.map(s => `- ${s.guards.name}`).join('\n'));
+                shiftToEnd = activeShifts.find(s => 
+                    s.guards.name.toLowerCase().includes(guardName?.toLowerCase() || '')
+                );
+                if (!shiftToEnd) {
+                    showNotification('Guard not found', 'error');
+                    return;
+                }
+            }
+            
+            if (!confirm(`End shift for ${shiftToEnd.guards.name}?`)) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('guard_shifts')
+                    .update({ shift_end: new Date().toISOString() })
+                    .eq('id', shiftToEnd.id);
+                
+                if (error) throw error;
+                
+                await loadActiveShifts();
+                updateAllUI();
+                showNotification('Shift ended successfully');
+            } catch (error) {
+                console.error('Error ending shift:', error);
+                showNotification('Error ending shift', 'error');
+            }
+        }
+        
+        // ============================================
+        // CHECK-IN/OUT PROCESSING
+        // ============================================
+        
+        function openQRModal(driverId) {
+            const driver = drivers.find(d => d.id === driverId);
+            if (!driver) return;
+            
+            currentDriver = driver;
+            
+            document.getElementById('qrDriverName').textContent = driver.name;
+            document.getElementById('qrDriverInfo').innerHTML = `
+                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                    <div class="info-row">
+                        <span class="info-label">Plate</span>
+                        <span class="info-value">${driver.lorry_plate}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Company</span>
+                        <span class="info-value">${driver.company}</span>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('qrCode').innerHTML = generateQRCode(driver.driver_id);
+            openModal('qrModal');
+        }
+        
+        function generateQRCode(driverId) {
+            return `
+                <svg width="200" height="200" viewBox="0 0 200 200" style="margin: 0 auto; display: block;">
+                    <rect width="200" height="200" fill="white"/>
+                    <rect x="20" y="20" width="40" height="40" fill="#667eea"/>
+                    <rect x="140" y="20" width="40" height="40" fill="#667eea"/>
+                    <rect x="20" y="140" width="40" height="40" fill="#667eea"/>
+                    ${[...Array(20)].map((_, i) => {
+                        const x = 70 + ((i * 7) % 6) * 10;
+                        const y = 70 + ((i * 11) % 6) * 10;
+                        return `<rect x="${x}" y="${y}" width="10" height="10" fill="#667eea"/>`;
+                    }).join('')}
+                    <text x="100" y="195" text-anchor="middle" font-size="10" fill="#64748b">${driverId}</text>
+                </svg>
+                <p style="margin-top: 16px; font-size: 12px; color: #64748b; font-weight: 600;">Scan to check in/out</p>
+            `;
+        }
+        
+        async function processCheckIn() {
+            if (!currentDriver) return;
+            
+            const guardId = document.getElementById('processingGuard').value;
+            const purpose = document.getElementById('visitPurpose').value;
+            
+            if (!guardId || !purpose) {
+                showNotification('Please select guard and purpose', 'error');
+                return;
+            }
+            
+            // Find active log for this driver
+            const activeLog = visitLogs.find(log => 
+                log.driver_id === currentDriver.id && log.status === 'in'
+            );
+            
+            try {
+                const guard = guards.find(g => g.id === guardId);
+                const activeShift = activeShifts.find(s => s.guard_id === guardId);
+                
+                if (activeLog) {
+                    // Check out
+                    const { error } = await supabase
+                        .from('visit_logs')
+                        .update({
+                            check_out_time: new Date().toISOString(),
+                            status: 'out',
+                            checked_out_by_guard_id: guardId,
+                            checked_out_by_guard_name: guard?.name
+                        })
+                        .eq('id', activeLog.id);
+                    
+                    if (error) throw error;
+                    showNotification(`${currentDriver.name} checked out`);
+                } else {
+                    // Check in
+                    const logId = 'LOG' + Date.now();
+                    const { error } = await supabase
+                        .from('visit_logs')
+                        .insert([{
+                            log_id: logId,
+                            driver_id: currentDriver.id,
+                            driver_name: currentDriver.name,
+                            lorry_plate: currentDriver.lorry_plate,
+                            company: currentDriver.company,
+                            purpose: purpose,
+                            check_in_time: new Date().toISOString(),
+                            status: 'in',
+                            checked_in_by_guard_id: guardId,
+                            checked_in_by_guard_name: guard?.name,
+                            guard_shift_id: activeShift?.id
+                        }]);
+                    
+                    if (error) throw error;
+                    showNotification(`${currentDriver.name} checked in`);
+                }
+                
+                await loadVisitLogs();
+                updateAllUI();
+                closeModal('qrModal');
+                document.getElementById('visitPurpose').value = '';
+            } catch (error) {
+                console.error('Error processing check-in:', error);
+                showNotification('Error processing check-in', 'error');
+            }
+        }
+        
+        // ============================================
+        // REPORTS
+        // ============================================
+        
+        function selectReport(type) {
+            selectedReportType = type;
+            document.querySelectorAll('.report-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.report-btn').classList.add('active');
+        }
+        
+        async function generateReport() {
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            
+            if (!startDate || !endDate) {
+                showNotification('Please select date range', 'error');
+                return;
+            }
+            
+            try {
+                // Load data for date range
+                const { data: logs, error } = await supabase
+                    .from('visit_logs')
+                    .select('*')
+                    .gte('check_in_time', startDate)
+                    .lte('check_in_time', endDate + 'T23:59:59');
+                
+                if (error) throw error;
+                
+                const { data: shifts } = await supabase
+                    .from('guard_shifts')
+                    .select(`*, guards(name, badge_id)`)
+                    .gte('shift_start', startDate)
+                    .lte('shift_start', endDate + 'T23:59:59');
+                
+                let csvContent = '';
+                
+                switch (selectedReportType) {
+                    case 'shift':
+                        csvContent = generateShiftSummaryReport(shifts || [], logs || []);
+                        break;
+                    case 'guard':
+                        csvContent = generateGuardActivityReport(shifts || [], logs || []);
+                        break;
+                    case 'daily':
+                        csvContent = generateDailyOperationsReport(logs || []);
+                        break;
+                    case 'duration':
+                        csvContent = generateDurationReport(logs || []);
+                        break;
+                }
+                
+                downloadCSV(csvContent, `${selectedReportType}-report-${startDate}-to-${endDate}.csv`);
+                showNotification('Report generated successfully');
+            } catch (error) {
+                console.error('Error generating report:', error);
+                showNotification('Error generating report', 'error');
+            }
+        }
+        
+        function generateShiftSummaryReport(shifts, logs) {
+            const csv = [
+                ['Shift Summary Report'],
+                ['Generated:', new Date().toLocaleString()],
+                [''],
+                ['Date', 'Guard', 'Badge ID', 'Shift Type', 'Start Time', 'End Time', 'Duration', 'Visitors Processed', 'Currently On-Site']
+            ];
+            
+            shifts.forEach(shift => {
+                const shiftLogs = logs.filter(l => l.guard_shift_id === shift.id);
+                const onSite = shiftLogs.filter(l => l.status === 'in').length;
+                const duration = shift.shift_end ? 
+                    calculateDuration(shift.shift_start, shift.shift_end) : 'Ongoing';
+                
+                csv.push([
+                    formatDate(shift.shift_start),
+                    shift.guards.name,
+                    shift.guards.badge_id || 'N/A',
+                    shift.shift_type,
+                    formatTime(shift.shift_start),
+                    shift.shift_end ? formatTime(shift.shift_end) : 'Ongoing',
+                    duration,
+                    shiftLogs.length,
+                    onSite
+                ]);
+            });
+            
+            return csv.map(row => row.join(',')).join('\n');
+        }
+        
+        function generateGuardActivityReport(shifts, logs) {
+            const guardStats = {};
+            
+            shifts.forEach(shift => {
+                const guardId = shift.guard_id;
+                if (!guardStats[guardId]) {
+                    guardStats[guardId] = {
+                        name: shift.guards.name,
+                        badgeId: shift.guards.badge_id,
+                        totalShifts: 0,
+                        totalVisitors: 0,
+                        totalHours: 0
+                    };
+                }
+                
+                guardStats[guardId].totalShifts++;
+                guardStats[guardId].totalVisitors += logs.filter(l => l.guard_shift_id === shift.id).length;
+                
+                if (shift.shift_end) {
+                    const hours = (new Date(shift.shift_end) - new Date(shift.shift_start)) / 3600000;
+                    guardStats[guardId].totalHours += hours;
+                }
+            });
+            
+            const csv = [
+                ['Guard Activity Report'],
+                ['Generated:', new Date().toLocaleString()],
+                [''],
+                ['Guard Name', 'Badge ID', 'Total Shifts', 'Total Visitors Processed', 'Total Hours Worked', 'Avg Visitors/Shift']
+            ];
+            
+            Object.values(guardStats).forEach(stats => {
+                csv.push([
+                    stats.name,
+                    stats.badgeId || 'N/A',
+                    stats.totalShifts,
+                    stats.totalVisitors,
+                    stats.totalHours.toFixed(1),
+                    (stats.totalVisitors / stats.totalShifts).toFixed(1)
+                ]);
+            });
+            
+            return csv.map(row => row.join(',')).join('\n');
+        }
+        
+        function generateDailyOperationsReport(logs) {
+            const csv = [
+                ['Daily Operations Report'],
+                ['Generated:', new Date().toLocaleString()],
+                [''],
+                ['Date', 'Driver', 'Plate', 'Company', 'Purpose', 'Check In', 'Check Out', 'Duration', 'Guard (In)', 'Guard (Out)', 'Status']
+            ];
+            
+            logs.forEach(log => {
+                csv.push([
+                    formatDate(log.check_in_time),
+                    log.driver_name,
+                    log.lorry_plate,
+                    log.company,
+                    log.purpose,
+                    formatDateTime(log.check_in_time),
+                    log.check_out_time ? formatDateTime(log.check_out_time) : 'Still On-Site',
+                    log.check_out_time ? calculateDuration(log.check_in_time, log.check_out_time) : 'Ongoing',
+                    log.checked_in_by_guard_name || 'N/A',
+                    log.checked_out_by_guard_name || 'N/A',
+                    log.status.toUpperCase()
+                ]);
+            });
+            
+            return csv.map(row => row.join(',')).join('\n');
+        }
+        
+        function generateDurationReport(logs) {
+            const completedLogs = logs.filter(l => l.check_out_time);
+            
+            const csv = [
+                ['Visitor Duration Analysis Report'],
+                ['Generated:', new Date().toLocaleString()],
+                [''],
+                ['Summary Statistics'],
+                ['Total Visits:', completedLogs.length],
+                ['Average Duration (hours):', calculateAverageDuration(completedLogs)],
+                [''],
+                ['Detailed Duration Data'],
+                ['Driver', 'Plate', 'Purpose', 'Check In', 'Check Out', 'Duration (mins)', 'Duration (hrs)']
+            ];
+            
+            completedLogs.forEach(log => {
+                const durationMs = new Date(log.check_out_time) - new Date(log.check_in_time);
+                const durationMins = Math.floor(durationMs / 60000);
+                const durationHrs = (durationMs / 3600000).toFixed(2);
+                
+                csv.push([
+                    log.driver_name,
+                    log.lorry_plate,
+                    log.purpose,
+                    formatDateTime(log.check_in_time),
+                    formatDateTime(log.check_out_time),
+                    durationMins,
+                    durationHrs
+                ]);
+            });
+            
+            return csv.map(row => row.join(',')).join('\n');
+        }
+        
+        function calculateAverageDuration(logs) {
+            if (logs.length === 0) return '0.00';
+            
+            const totalMs = logs.reduce((sum, log) => {
+                return sum + (new Date(log.check_out_time) - new Date(log.check_in_time));
+            }, 0);
+            
+            return (totalMs / logs.length / 3600000).toFixed(2);
+        }
+        
+        function exportQuickReport() {
+            const onsite = visitLogs.filter(log => log.status === 'in');
+            
+            const csv = [
+                ['Quick On-Site Report'],
+                ['Generated:', new Date().toLocaleString()],
+                [''],
+                ['Driver', 'Plate', 'Company', 'Purpose', 'Check In Time', 'Duration', 'Guard']
+            ];
+            
+            onsite.forEach(log => {
+                csv.push([
+                    log.driver_name,
+                    log.lorry_plate,
+                    log.company,
+                    log.purpose,
+                    formatDateTime(log.check_in_time),
+                    calculateDuration(log.check_in_time),
+                    log.checked_in_by_guard_name || 'N/A'
+                ]);
+            });
+            
+            downloadCSV(csv.map(row => row.join(',')).join('\n'), `onsite-report-${new Date().toISOString().split('T')[0]}.csv`);
+            showNotification('Report exported');
+        }
+        
+        function downloadCSV(content, filename) {
+            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+        }
+        
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        
+        function calculateDuration(start, end = null) {
+            const startTime = new Date(start);
+            const endTime = end ? new Date(end) : new Date();
+            const diff = endTime - startTime;
+            
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            
+            return `${hours}h ${minutes}m`;
+        }
+        
+        function formatTime(datetime) {
+            return new Date(datetime).toLocaleTimeString('en-MY', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        function formatDate(datetime) {
+            return new Date(datetime).toLocaleDateString('en-MY');
+        }
+        
+        function formatDateTime(datetime) {
+            return new Date(datetime).toLocaleString('en-MY', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        function showView(viewName) {
+            if (isAdminMode) {
+                document.getElementById('admin-panel').classList.add('hidden');
+                isAdminMode = false;
+            }
+            
+            document.querySelectorAll('[id$="-view"]').forEach(v => v.classList.add('hidden'));
+            document.getElementById(viewName + '-view').classList.remove('hidden');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('show');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notif = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+            
+            text.textContent = message;
+            notif.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 3000);
+        }
+        
+        function clearLogFilters() {
+            document.getElementById('logDateFilter').value = '';
+            updateLogsTable();
+        }
+        
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        });
+        
+        // Apply log date filter
+        document.getElementById('logDateFilter')?.addEventListener('change', updateLogsTable);
+        
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
