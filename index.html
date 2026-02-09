@@ -792,6 +792,21 @@ CREATE POLICY "Allow all operations on visit_logs" ON visit_logs FOR ALL USING (
             document.getElementById('visitPurpose').value = '';
         }
 
+        // Format date to Malaysia timezone
+        function formatDateTime(isoString, timeOnly = false) {
+            const date = new Date(isoString);
+            const options = {
+                timeZone: 'Asia/Kuala_Lumpur',
+                hour12: true,
+                year: timeOnly ? undefined : 'numeric',
+                month: timeOnly ? undefined : 'short',
+                day: timeOnly ? undefined : 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return date.toLocaleString('en-MY', options);
+        }
+
         // Calculate duration
         function calculateDuration(start, end) {
             const diff = new Date(end) - new Date(start);
@@ -808,8 +823,8 @@ CREATE POLICY "Allow all operations on visit_logs" ON visit_logs FOR ALL USING (
                     log.driverName,
                     log.lorryPlate,
                     log.company,
-                    new Date(log.checkInTime).toLocaleString(),
-                    log.checkOutTime ? new Date(log.checkOutTime).toLocaleString() : 'On-Site',
+                    formatDateTime(log.checkInTime),
+                    log.checkOutTime ? formatDateTime(log.checkOutTime) : 'On-Site',
                     log.purpose,
                     log.checkOutTime ? calculateDuration(log.checkInTime, log.checkOutTime) : 'Ongoing'
                 ])
@@ -858,7 +873,7 @@ CREATE POLICY "Allow all operations on visit_logs" ON visit_logs FOR ALL USING (
                                     <td><span class="badge badge-plate">${log.lorryPlate}</span></td>
                                     <td>${log.company}</td>
                                     <td><span class="badge badge-purpose">${log.purpose}</span></td>
-                                    <td>${new Date(log.checkInTime).toLocaleTimeString()}</td>
+                                    <td>${formatDateTime(log.checkInTime, true)}</td>
                                     <td style="font-weight: 600; color: #667eea;">${calculateDuration(log.checkInTime, new Date().toISOString())}</td>
                                 </tr>
                             `).join('')}
@@ -923,8 +938,8 @@ CREATE POLICY "Allow all operations on visit_logs" ON visit_logs FOR ALL USING (
                                     <td><span class="badge badge-plate">${log.lorryPlate}</span></td>
                                     <td>${log.company}</td>
                                     <td>${log.purpose}</td>
-                                    <td style="font-size: 13px;">${new Date(log.checkInTime).toLocaleString()}</td>
-                                    <td style="font-size: 13px;">${log.checkOutTime ? new Date(log.checkOutTime).toLocaleString() : '-'}</td>
+                                    <td style="font-size: 13px;">${formatDateTime(log.checkInTime)}</td>
+                                    <td style="font-size: 13px;">${log.checkOutTime ? formatDateTime(log.checkOutTime) : '-'}</td>
                                     <td>${log.checkOutTime ? calculateDuration(log.checkInTime, log.checkOutTime) : '-'}</td>
                                     <td><span class="badge badge-status-${log.status}">${log.status === 'in' ? '● ON-SITE' : 'DEPARTED'}</span></td>
                                 </tr>
