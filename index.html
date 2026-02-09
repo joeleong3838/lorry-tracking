@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lorry Tracking System - Cloud Enabled</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .nav {
+            background: rgba(255,255,255,0.95);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .nav h1 { font-size: 24px; color: #1a1a2e; }
+        .nav-buttons { 
+            display: flex; 
+            gap: 12px; 
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            background: transparent;
+            color: #64748b;
+        }
+        .nav-btn.active { background: #667eea; color: white; }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: white; border: 2px solid #e2e8f0; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .stat-value { font-size: 36px; font-weight: 800; margin: 16px 0 4px; }
+        .stat-label { font-size: 14px; font-weight: 600; color: #64748b; }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        td { padding: 16px; border-bottom: 1px solid #f1f5f9; }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            font-size: 14px;
+        }
+        .driver-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .driver-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .badge-plate { background: #f1f5f9; }
+        .badge-purpose { background: #dbeafe; color: #1e40af; }
+        .badge-status-in { background: #dcfce7; color: #166534; }
+        .badge-status-out { background: #f1f5f9; color: #475569; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: none;
+        }
+        .notification.show { display: block; }
+        .notification.error { background: #ef4444; }
+        .qr-code {
+            border: 3px solid #667eea;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin: 24px 0;
+        }
+        .hidden { display: none; }
+        .sync-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .sync-status.synced { background: #dcfce7; color: #166534; }
+        .sync-status.syncing { background: #fef3c7; color: #92400e; }
+        .sync-status.offline { background: #fee2e2; color: #991b1b; }
+        .setup-banner {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification"></div>
+
+    <div class="nav">
+        <div>
+            <h1>🚛 Lorry Tracking System</h1>
+            <div class="sync-status synced" id="sync-status">
+                <span id="sync-icon">☁️</span>
+                <span id="sync-text">Cloud Ready</span>
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
+            <button class="nav-btn" onclick="showView('drivers')">Drivers</button>
+            <button class="nav-btn" onclick="showView('logs')">Logs</button>
+            <button class="nav-btn" onclick="showView('setup')" style="background: #fbbf24; color: white; font-weight: 700;">⚙️ Setup Database</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Setup Instructions -->
+        <div id="setup-view" class="hidden">
+            <div class="card">
+                <h2 style="margin-bottom: 24px;">☁️ Database Setup Instructions</h2>
+                
+                <div style="background: #f8fafc; padding: 24px; border-radius: 12px; margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 16px;">Step 1: Create Free Supabase Account</h3>
+                    <ol style="margin-left: 20px; line-height: 1.8;">
+                        <li>Go to <a href="https://supabase.com" target="_blank" style="color: #667eea; font-weight: 600;">supabase.com</a></li>
+                        <li>Click "Start your project" and sign up (free forever)</li>
+                        <li>Create a new project (choose any name)</li>
+                        <li>Wait 2-3 minutes for project setup</li>
+                    </ol>
+                </div>
+
+                <div style="background: #f8fafc; padding: 24px; border-radius: 12px; margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 16px;">Step 2: Run This SQL Code</h3>
+                    <p style="margin-bottom: 12px; color: #64748b;">In your Supabase project, go to <strong>SQL Editor</strong> and paste this code:</p>
+                    <pre style="background: #1a1a2e; color: #10b981; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 13px; margin-bottom: 16px;">-- Create drivers table
+CREATE TABLE drivers (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    lorry_plate TEXT NOT NULL,
+    company TEXT NOT NULL,
+    phone TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create visit_logs table
+CREATE TABLE visit_logs (
+    id TEXT PRIMARY KEY,
+    driver_id TEXT NOT NULL,
+    driver_name TEXT NOT NULL,
+    lorry_plate TEXT NOT NULL,
+    company TEXT NOT NULL,
+    check_in_time TIMESTAMP NOT NULL,
+    check_out_time TIMESTAMP,
+    purpose TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE visit_logs ENABLE ROW LEVEL SECURITY;
+
+-- Create policies to allow all operations (for simplicity)
+CREATE POLICY "Allow all operations on drivers" ON drivers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all operations on visit_logs" ON visit_logs FOR ALL USING (true) WITH CHECK (true);</pre>
+                    <button class="btn btn-secondary" onclick="copySQL()">📋 Copy SQL Code</button>
+                </div>
+
+                <div style="background: #f8fafc; padding: 24px; border-radius: 12px; margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 16px;">Step 3: Get Your API Keys</h3>
+                    <ol style="margin-left: 20px; line-height: 1.8;">
+                        <li>In Supabase, go to <strong>Settings</strong> → <strong>API</strong></li>
+                        <li>Copy your <strong>Project URL</strong></li>
+                        <li>Copy your <strong>anon/public</strong> key (under "Project API keys")</li>
+                        <li>Paste both values below</li>
+                    </ol>
+                </div>
+
+                <div class="form-group">
+                    <label>Supabase Project URL:</label>
+                    <input type="text" id="supabase-url" placeholder="https://xxxxx.supabase.co" value="">
+                </div>
+
+                <div class="form-group">
+                    <label>Supabase Anon Key:</label>
+                    <input type="text" id="supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." value="">
+                </div>
+
+                <button class="btn btn-primary" onclick="saveSupabaseConfig()">💾 Save Configuration</button>
+                <button class="btn btn-secondary" style="margin-left: 12px;" onclick="testConnection()">🔌 Test Connection</button>
+
+                <div style="margin-top: 24px; padding: 16px; background: #dbeafe; border-radius: 8px; color: #1e40af;">
+                    <strong>💡 Tip:</strong> Once configured, your data will sync automatically across all devices!
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view">
+            <div class="stats">
+                <div class="stat-card">
+                    <div style="font-size: 32px;">👥</div>
+                    <div class="stat-value" id="stat-onsite">0</div>
+                    <div class="stat-label">Currently On-Site</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 32px;">🚛</div>
+                    <div class="stat-value" id="stat-total">0</div>
+                    <div class="stat-label">Total Drivers</div>
+                </div>
+                <div class="stat-card">
+                    <div style="font-size: 32px;">📋</div>
+                    <div class="stat-value" id="stat-today">0</div>
+                    <div class="stat-label">Visits Today</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2>Currently On-Site</h2>
+                    <button class="btn btn-secondary" onclick="refreshData()">🔄 Refresh</button>
+                </div>
+                <div id="onsite-table"></div>
+            </div>
+        </div>
+
+        <!-- Drivers View -->
+        <div id="drivers-view" class="hidden">
+            <div class="card" style="margin-bottom: 32px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Manage Drivers</h2>
+                    <button class="btn btn-primary" onclick="openAddDriverModal()">➕ Add Driver</button>
+                </div>
+            </div>
+            <div class="driver-grid" id="drivers-list"></div>
+        </div>
+
+        <!-- Logs View -->
+        <div id="logs-view" class="hidden">
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2>Visit History</h2>
+                    <button class="btn btn-secondary" onclick="exportToCSV()">📥 Export CSV</button>
+                </div>
+                <div id="logs-table"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Driver Modal -->
+    <div class="modal" id="addDriverModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 24px;">Add New Driver</h2>
+            <div class="form-group">
+                <label>Driver Name *</label>
+                <input type="text" id="driverName" required>
+            </div>
+            <div class="form-group">
+                <label>Lorry Plate *</label>
+                <input type="text" id="lorryPlate" required>
+            </div>
+            <div class="form-group">
+                <label>Company *</label>
+                <input type="text" id="company" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="phone">
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 32px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="addDriver()">Add Driver</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addDriverModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Modal -->
+    <div class="modal" id="qrModal">
+        <div class="modal-content">
+            <div id="qr-content"></div>
+            <div class="form-group">
+                <label>Visit Purpose *</label>
+                <select id="visitPurpose">
+                    <option value="">Select purpose...</option>
+                    <option value="Delivery">Delivery</option>
+                    <option value="Pickup">Pickup</option>
+                    <option value="Loading">Loading</option>
+                    <option value="Unloading">Unloading</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="processCheckIn()">Confirm</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('qrModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        let supabaseClient = null;
+        let drivers = [];
+        let visitLogs = [];
+        let currentDriver = null;
+        let isOnline = navigator.onLine;
+
+        // Initialize Supabase
+        function initSupabase() {
+            const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+            if (config.url && config.key) {
+                try {
+                    if (window.supabase && window.supabase.createClient) {
+                        supabaseClient = window.supabase.createClient(config.url, config.key);
+                        updateSyncStatus('synced');
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Supabase init error:', error);
+                }
+            }
+            updateSyncStatus('offline');
+            return false;
+        }
+
+        // Save Supabase configuration
+        function saveSupabaseConfig() {
+            const url = document.getElementById('supabase-url').value.trim();
+            const key = document.getElementById('supabase-key').value.trim();
+
+            if (!url || !key) {
+                showNotification('Please enter both URL and API key', true);
+                return;
+            }
+
+            localStorage.setItem('supabase_config', JSON.stringify({ url, key }));
+            initSupabase();
+            showNotification('Configuration saved! Testing connection...');
+            
+            setTimeout(() => {
+                testConnection();
+            }, 500);
+        }
+
+        // Test database connection
+        async function testConnection() {
+            if (!supabaseClient) {
+                showNotification('Please configure Supabase first', true);
+                return;
+            }
+
+            updateSyncStatus('syncing');
+            
+            try {
+                const { data, error } = await supabaseClient.from('drivers').select('count');
+                if (error) throw error;
+                
+                showNotification('✅ Connection successful! Syncing data...');
+                await loadFromCloud();
+                updateSyncStatus('synced');
+            } catch (error) {
+                console.error('Connection error:', error);
+                showNotification('❌ Connection failed: ' + error.message, true);
+                updateSyncStatus('offline');
+            }
+        }
+
+        // Copy SQL code
+        function copySQL() {
+            const sql = `-- Create drivers table
+CREATE TABLE drivers (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    lorry_plate TEXT NOT NULL,
+    company TEXT NOT NULL,
+    phone TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Create visit_logs table
+CREATE TABLE visit_logs (
+    id TEXT PRIMARY KEY,
+    driver_id TEXT NOT NULL,
+    driver_name TEXT NOT NULL,
+    lorry_plate TEXT NOT NULL,
+    company TEXT NOT NULL,
+    check_in_time TIMESTAMP NOT NULL,
+    check_out_time TIMESTAMP,
+    purpose TEXT NOT NULL,
+    status TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE drivers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE visit_logs ENABLE ROW LEVEL SECURITY;
+
+-- Create policies to allow all operations (for simplicity)
+CREATE POLICY "Allow all operations on drivers" ON drivers FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all operations on visit_logs" ON visit_logs FOR ALL USING (true) WITH CHECK (true);`;
+
+            navigator.clipboard.writeText(sql).then(() => {
+                showNotification('SQL code copied to clipboard!');
+            });
+        }
+
+        // Update sync status indicator
+        function updateSyncStatus(status) {
+            const statusEl = document.getElementById('sync-status');
+            const iconEl = document.getElementById('sync-icon');
+            const textEl = document.getElementById('sync-text');
+
+            statusEl.className = 'sync-status ' + status;
+            
+            if (status === 'synced') {
+                iconEl.textContent = '☁️';
+                textEl.textContent = 'Cloud Synced';
+            } else if (status === 'syncing') {
+                iconEl.textContent = '⏳';
+                textEl.textContent = 'Syncing...';
+            } else {
+                iconEl.textContent = '📱';
+                textEl.textContent = 'Local Only';
+            }
+        }
+
+        // Load data from cloud
+        async function loadFromCloud() {
+            if (!supabaseClient) {
+                loadLocalData();
+                return;
+            }
+
+            updateSyncStatus('syncing');
+
+            try {
+                const [driversResult, logsResult] = await Promise.all([
+                    supabase.from('drivers').select('*'),
+                    supabase.from('visit_logs').select('*')
+                ]);
+
+                if (driversResult.error) throw driversResult.error;
+                if (logsResult.error) throw logsResult.error;
+
+                drivers = driversResult.data.map(d => ({
+                    id: d.id,
+                    name: d.name,
+                    lorryPlate: d.lorry_plate,
+                    company: d.company,
+                    phone: d.phone
+                }));
+
+                visitLogs = logsResult.data.map(l => ({
+                    id: l.id,
+                    driverId: l.driver_id,
+                    driverName: l.driver_name,
+                    lorryPlate: l.lorry_plate,
+                    company: l.company,
+                    checkInTime: l.check_in_time,
+                    checkOutTime: l.check_out_time,
+                    purpose: l.purpose,
+                    status: l.status
+                }));
+
+                saveLocalData();
+                updateUI();
+                updateSyncStatus('synced');
+            } catch (error) {
+                console.error('Load error:', error);
+                loadLocalData();
+                updateSyncStatus('offline');
+            }
+        }
+
+        // Save driver to cloud
+        async function saveDriverToCloud(driver) {
+            if (!supabaseClient) return;
+
+            try {
+                const { error } = await supabaseClient.from('drivers').upsert({
+                    id: driver.id,
+                    name: driver.name,
+                    lorry_plate: driver.lorryPlate,
+                    company: driver.company,
+                    phone: driver.phone
+                });
+
+                if (error) throw error;
+            } catch (error) {
+                console.error('Save driver error:', error);
+            }
+        }
+
+        // Save log to cloud
+        async function saveLogToCloud(log) {
+            if (!supabaseClient) return;
+
+            try {
+                const { error } = await supabaseClient.from('visit_logs').upsert({
+                    id: log.id,
+                    driver_id: log.driverId,
+                    driver_name: log.driverName,
+                    lorry_plate: log.lorryPlate,
+                    company: log.company,
+                    check_in_time: log.checkInTime,
+                    check_out_time: log.checkOutTime,
+                    purpose: log.purpose,
+                    status: log.status
+                });
+
+                if (error) throw error;
+            } catch (error) {
+                console.error('Save log error:', error);
+            }
+        }
+
+        // Delete driver from cloud
+        async function deleteDriverFromCloud(driverId) {
+            if (!supabaseClient) return;
+
+            try {
+                const { error } = await supabaseClient.from('drivers').delete().eq('id', driverId);
+                if (error) throw error;
+            } catch (error) {
+                console.error('Delete driver error:', error);
+            }
+        }
+
+        // Local storage functions
+        function saveLocalData() {
+            localStorage.setItem('drivers', JSON.stringify(drivers));
+            localStorage.setItem('visitLogs', JSON.stringify(visitLogs));
+        }
+
+        function loadLocalData() {
+            drivers = JSON.parse(localStorage.getItem('drivers') || '[]');
+            visitLogs = JSON.parse(localStorage.getItem('visitLogs') || '[]');
+            updateUI();
+        }
+
+        // Refresh data
+        async function refreshData() {
+            showNotification('Refreshing data...');
+            await loadFromCloud();
+        }
+
+        // Show notification
+        function showNotification(message, isError = false) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification show' + (isError ? ' error' : '');
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
+        // View management
+        function showView(view) {
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.getElementById('dashboard-view').classList.add('hidden');
+            document.getElementById('drivers-view').classList.add('hidden');
+            document.getElementById('logs-view').classList.add('hidden');
+            document.getElementById('setup-view').classList.add('hidden');
+            
+            document.getElementById(view + '-view').classList.remove('hidden');
+        }
+
+        // Modal functions
+        function openAddDriverModal() {
+            document.getElementById('addDriverModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Add driver
+        async function addDriver() {
+            const name = document.getElementById('driverName').value.trim();
+            const plate = document.getElementById('lorryPlate').value.trim();
+            const company = document.getElementById('company').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+
+            if (!name || !plate || !company) {
+                showNotification('Please fill all required fields', true);
+                return;
+            }
+
+            const driver = {
+                id: 'DRV' + Date.now(),
+                name,
+                lorryPlate: plate,
+                company,
+                phone
+            };
+
+            drivers.push(driver);
+            saveLocalData();
+            await saveDriverToCloud(driver);
+            
+            updateUI();
+            closeModal('addDriverModal');
+            
+            document.getElementById('driverName').value = '';
+            document.getElementById('lorryPlate').value = '';
+            document.getElementById('company').value = '';
+            document.getElementById('phone').value = '';
+            
+            showNotification('Driver added successfully!');
+        }
+
+        // Delete driver
+        async function deleteDriver(driverId) {
+            if (!confirm('Are you sure you want to delete this driver?')) return;
+            
+            drivers = drivers.filter(d => d.id !== driverId);
+            saveLocalData();
+            await deleteDriverFromCloud(driverId);
+            
+            updateUI();
+            showNotification('Driver deleted');
+        }
+
+        // QR Modal
+        function openQRModal(driverId) {
+            currentDriver = drivers.find(d => d.id === driverId);
+            if (!currentDriver) return;
+
+            const activeLog = visitLogs.find(log => log.driverId === driverId && !log.checkOutTime);
+            
+            document.getElementById('qr-content').innerHTML = `
+                <h3 style="margin-bottom: 16px;">${currentDriver.name}</h3>
+                <p style="color: #64748b; margin-bottom: 24px;">${currentDriver.lorryPlate} • ${currentDriver.company}</p>
+                ${activeLog ? 
+                    '<div style="padding: 16px; background: #dcfce7; border-radius: 12px; margin-bottom: 24px; color: #166534; font-weight: 600;">✓ Currently On-Site</div>' : 
+                    '<div style="padding: 16px; background: #f1f5f9; border-radius: 12px; margin-bottom: 24px; color: #64748b; font-weight: 600;">Ready to Check In</div>'
+                }
+                <div class="qr-code">
+                    <svg viewBox="0 0 200 200" style="width: 200px; height: 200px;">
+                        <rect width="200" height="200" fill="white"/>
+                        ${generateQRPattern(driverId)}
+                    </svg>
+                    <p style="margin-top: 16px; font-size: 12px; color: #64748b; font-weight: 600;">Scan to check in/out</p>
+                </div>
+            `;
+            
+            document.getElementById('qrModal').classList.add('show');
+        }
+
+        function generateQRPattern(id) {
+            let svg = '';
+            const hash = id.split('').reduce((a, b) => ((a << 5) - a + b.charCodeAt(0)) | 0, 0);
+            for (let i = 0; i < 100; i++) {
+                const x = (i % 10) * 20;
+                const y = Math.floor(i / 10) * 20;
+                if ((hash + i) % 2) svg += `<rect x="${x}" y="${y}" width="20" height="20" fill="#667eea"/>`;
+            }
+            return svg;
+        }
+
+        // Process check-in/out
+        async function processCheckIn() {
+            const purpose = document.getElementById('visitPurpose').value;
+            if (!purpose || !currentDriver) return;
+
+            const activeLog = visitLogs.find(log => log.driverId === currentDriver.id && !log.checkOutTime);
+            const now = new Date().toISOString();
+
+            if (activeLog) {
+                activeLog.checkOutTime = now;
+                activeLog.status = 'out';
+                await saveLogToCloud(activeLog);
+                showNotification(`${currentDriver.name} checked out`);
+            } else {
+                const newLog = {
+                    id: 'LOG' + Date.now(),
+                    driverId: currentDriver.id,
+                    driverName: currentDriver.name,
+                    lorryPlate: currentDriver.lorryPlate,
+                    company: currentDriver.company,
+                    checkInTime: now,
+                    checkOutTime: null,
+                    purpose,
+                    status: 'in'
+                };
+                visitLogs.push(newLog);
+                await saveLogToCloud(newLog);
+                showNotification(`${currentDriver.name} checked in`);
+            }
+
+            saveLocalData();
+            updateUI();
+            closeModal('qrModal');
+            document.getElementById('visitPurpose').value = '';
+        }
+
+        // Calculate duration
+        function calculateDuration(start, end) {
+            const diff = new Date(end) - new Date(start);
+            const hours = Math.floor(diff / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            return `${hours}h ${minutes}m`;
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            const csv = [
+                ['Driver', 'Plate', 'Company', 'Check In', 'Check Out', 'Purpose', 'Duration'],
+                ...visitLogs.map(log => [
+                    log.driverName,
+                    log.lorryPlate,
+                    log.company,
+                    new Date(log.checkInTime).toLocaleString(),
+                    log.checkOutTime ? new Date(log.checkOutTime).toLocaleString() : 'On-Site',
+                    log.purpose,
+                    log.checkOutTime ? calculateDuration(log.checkInTime, log.checkOutTime) : 'Ongoing'
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `logs-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            showNotification('Report exported!');
+        }
+
+        // Update UI
+        function updateUI() {
+            const onSite = visitLogs.filter(log => log.status === 'in');
+            const today = visitLogs.filter(log => 
+                new Date(log.checkInTime).toDateString() === new Date().toDateString()
+            );
+
+            document.getElementById('stat-onsite').textContent = onSite.length;
+            document.getElementById('stat-total').textContent = drivers.length;
+            document.getElementById('stat-today').textContent = today.length;
+
+            const onsiteTable = document.getElementById('onsite-table');
+            if (onSite.length === 0) {
+                onsiteTable.innerHTML = '<div class="empty-state"><p style="font-size: 16px; font-weight: 600;">No lorries currently on-site</p></div>';
+            } else {
+                onsiteTable.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Driver</th>
+                                <th>Plate</th>
+                                <th>Company</th>
+                                <th>Purpose</th>
+                                <th>Time In</th>
+                                <th>Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${onSite.map(log => `
+                                <tr>
+                                    <td>${log.driverName}</td>
+                                    <td><span class="badge badge-plate">${log.lorryPlate}</span></td>
+                                    <td>${log.company}</td>
+                                    <td><span class="badge badge-purpose">${log.purpose}</span></td>
+                                    <td>${new Date(log.checkInTime).toLocaleTimeString()}</td>
+                                    <td style="font-weight: 600; color: #667eea;">${calculateDuration(log.checkInTime, new Date().toISOString())}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            const driversList = document.getElementById('drivers-list');
+            if (drivers.length === 0) {
+                driversList.innerHTML = `
+                    <div class="card" style="grid-column: 1/-1; text-align: center; padding: 80px 40px;">
+                        <div style="font-size: 64px; opacity: 0.2;">🚛</div>
+                        <h3 style="font-size: 24px; margin: 20px 0 12px;">No drivers yet</h3>
+                        <p style="color: #64748b; margin-bottom: 24px;">Add your first driver to get started</p>
+                        <button class="btn btn-primary" onclick="openAddDriverModal()">Add First Driver</button>
+                    </div>
+                `;
+            } else {
+                driversList.innerHTML = drivers.map(driver => `
+                    <div class="driver-card">
+                        <button onclick="deleteDriver('${driver.id}')" style="position: absolute; top: 16px; right: 16px; background: #fee2e2; color: #dc2626; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer;">✕</button>
+                        <h3 style="margin: 0 0 4px; font-size: 20px;">${driver.name}</h3>
+                        <p style="margin: 0 0 20px; color: #64748b; font-size: 14px;">${driver.company}</p>
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="font-size: 13px; color: #64748b; font-weight: 600;">Plate</span>
+                                <span style="font-size: 13px; font-weight: 700;">${driver.lorryPlate}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                                <span style="font-size: 13px; color: #64748b; font-weight: 600;">Phone</span>
+                                <span style="font-size: 13px; font-weight: 700;">${driver.phone || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;" onclick="openQRModal('${driver.id}')">📱 View QR & Check In</button>
+                    </div>
+                `).join('');
+            }
+
+            const logsTable = document.getElementById('logs-table');
+            if (visitLogs.length === 0) {
+                logsTable.innerHTML = '<div class="empty-state"><p style="font-size: 16px; font-weight: 600;">No visit logs yet</p></div>';
+            } else {
+                logsTable.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Driver</th>
+                                <th>Plate</th>
+                                <th>Company</th>
+                                <th>Purpose</th>
+                                <th>Check In</th>
+                                <th>Check Out</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${[...visitLogs].reverse().map(log => `
+                                <tr>
+                                    <td>${log.driverName}</td>
+                                    <td><span class="badge badge-plate">${log.lorryPlate}</span></td>
+                                    <td>${log.company}</td>
+                                    <td>${log.purpose}</td>
+                                    <td style="font-size: 13px;">${new Date(log.checkInTime).toLocaleString()}</td>
+                                    <td style="font-size: 13px;">${log.checkOutTime ? new Date(log.checkOutTime).toLocaleString() : '-'}</td>
+                                    <td>${log.checkOutTime ? calculateDuration(log.checkInTime, log.checkOutTime) : '-'}</td>
+                                    <td><span class="badge badge-status-${log.status}">${log.status === 'in' ? '● ON-SITE' : 'DEPARTED'}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+        }
+
+        // Load saved configuration
+        window.addEventListener('load', () => {
+            const config = JSON.parse(localStorage.getItem('supabase_config') || '{}');
+            if (config.url && config.key) {
+                document.getElementById('supabase-url').value = config.url;
+                document.getElementById('supabase-key').value = config.key;
+            }
+        });
+
+        // Initialize
+        initSupabase();
+        loadFromCloud();
+
+        // Online/offline detection
+        window.addEventListener('online', () => {
+            isOnline = true;
+            if (supabaseClient) {
+                showNotification('Back online - syncing...');
+                loadFromCloud();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            updateSyncStatus('offline');
+            showNotification('Working offline - changes will sync when online');
+        });
+    </script>
+</body>
+</html>
