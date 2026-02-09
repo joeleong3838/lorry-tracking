@@ -533,8 +533,8 @@ CREATE POLICY "Allow all operations on visit_logs" ON visit_logs FOR ALL USING (
 
             try {
                 const [driversResult, logsResult] = await Promise.all([
-                    supabase.from('drivers').select('*'),
-                    supabase.from('visit_logs').select('*')
+                    supabaseClient.from('drivers').select('*'),
+                    supabaseClient.from('visit_logs').select('*')
                 ]);
 
                 if (driversResult.error) throw driversResult.error;
@@ -947,6 +947,13 @@ CREATE POLICY "Allow all operations on visit_logs" ON visit_logs FOR ALL USING (
         // Initialize
         initSupabase();
         loadFromCloud();
+
+        // Auto-refresh every 30 seconds to sync with other devices
+        setInterval(() => {
+            if (supabaseClient && isOnline) {
+                loadFromCloud();
+            }
+        }, 30000);
 
         // Online/offline detection
         window.addEventListener('online', () => {
