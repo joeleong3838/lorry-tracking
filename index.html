@@ -1128,32 +1128,32 @@
 // ========================================
 // TERMS & CONDITIONS LOGIC
 // ========================================
-const acceptCheckbox = document.getElementById('acceptCheckbox');
-const acceptBtn = document.getElementById('acceptBtn');
-const termsPage = document.getElementById('termsPage');
-const mainApp = document.getElementById('mainApp');
-
-// Enable/disable accept button based on checkbox
-acceptCheckbox.addEventListener('change', function() {
-    acceptBtn.disabled = !this.checked;
-});
-
-// Handle accept button click
-acceptBtn.addEventListener('click', function() {
-    // Save acceptance to localStorage (so user doesn't see it again)
-    localStorage.setItem('oshes_terms_accepted', 'true');
-    localStorage.setItem('oshes_terms_accepted_date', new Date().toISOString());
-    
-    // Hide terms page and show main app
-    termsPage.style.display = 'none';
-    mainApp.style.display = 'block';
-    
-    // Initialize the main app
-    init();
-});
-
-// Check if user has already accepted terms
 window.addEventListener('DOMContentLoaded', function() {
+    const acceptCheckbox = document.getElementById('acceptCheckbox');
+    const acceptBtn = document.getElementById('acceptBtn');
+    const termsPage = document.getElementById('termsPage');
+    const mainApp = document.getElementById('mainApp');
+
+    // Enable/disable accept button based on checkbox
+    acceptCheckbox.addEventListener('change', function() {
+        acceptBtn.disabled = !this.checked;
+    });
+
+    // Handle accept button click
+    acceptBtn.addEventListener('click', function() {
+        // Save acceptance to localStorage (so user doesn't see it again)
+        localStorage.setItem('oshes_terms_accepted', 'true');
+        localStorage.setItem('oshes_terms_accepted_date', new Date().toISOString());
+        
+        // Hide terms page and show main app
+        termsPage.style.display = 'none';
+        mainApp.style.display = 'block';
+        
+        // Initialize the main app
+        init();
+    });
+
+    // Check if user has already accepted terms
     const termsAccepted = localStorage.getItem('oshes_terms_accepted');
     
     if (termsAccepted === 'true') {
@@ -1168,12 +1168,6 @@ window.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Admin function to reset terms (for testing)
-function resetTermsAcceptance() {
-    localStorage.removeItem('oshes_terms_accepted');
-    localStorage.removeItem('oshes_terms_accepted_date');
-    location.reload();
-}
 
 // ========================================
 // MAIN APPLICATION LOGIC
