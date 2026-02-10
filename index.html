@@ -3,18 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lorry Tracking System - Guard Edition</title>
+    <title>PMW Lorry Tracking System</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding-bottom: 40px;
+        :root {
+            --pmw-navy: #2B3E7E;
+            --pmw-cyan: #00A8E1;
+            --pmw-dark: #1a2850;
+            --pmw-light: #e8f4f8;
         }
         
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--pmw-navy) 0%, var(--pmw-cyan) 100%);
+            min-height: 100vh;
+        }
+
+        /* ========================================
+           TERMS & CONDITIONS LANDING PAGE
+        ======================================== */
+        #termsPage {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .terms-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .terms-header {
+            background: linear-gradient(135deg, var(--pmw-cyan) 0%, var(--pmw-navy) 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .terms-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .terms-header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .terms-content {
+            padding: 40px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .terms-content h2 {
+            color: #1a1a2e;
+            font-size: 22px;
+            font-weight: 700;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        .terms-content h2:first-child {
+            margin-top: 0;
+        }
+
+        .terms-content p, .terms-content li {
+            color: #4a5568;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+
+        .terms-content ul {
+            margin-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .terms-content strong {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .warning-box strong {
+            color: #856404;
+        }
+
+        .terms-footer {
+            padding: 30px 40px;
+            background: #f7fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-top: 2px;
+        }
+
+        .checkbox-container label {
+            color: #2d3748;
+            font-size: 15px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .accept-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--pmw-cyan);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .accept-btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .accept-btn:not(:disabled):hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        /* ========================================
+           MAIN APP STYLES (Hidden initially)
+        ======================================== */
+        #mainApp {
+            display: none;
+            padding-bottom: 40px;
+        }
+
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         
         /* Navigation */
@@ -30,6 +195,35 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.1);
             flex-wrap: wrap;
             gap: 16px;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .nav-logo {
+            height: 50px;
+            width: auto;
+        }
+        
+        .nav-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .nav-title-main {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--pmw-navy);
+        }
+        
+        .nav-title-sub {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
         }
         
         .nav-title {
@@ -73,7 +267,7 @@
         }
         
         .nav-btn:hover { background: rgba(102, 126, 234, 0.1); }
-        .nav-btn.active { background: #667eea; color: white; }
+        .nav-btn.active { background: var(--pmw-cyan); color: white; }
         
         /* Cards */
         .card {
@@ -103,77 +297,160 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            transition: all 0.3s;
         }
         
-        .btn-primary { background: #667eea; color: white; }
-        .btn-primary:hover { background: #5568d3; }
-        .btn-secondary { background: white; border: 2px solid #e2e8f0; color: #64748b; }
-        .btn-secondary:hover { background: #f8fafc; }
-        .btn-success { background: #10b981; color: white; }
-        .btn-success:hover { background: #059669; }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; }
-        .btn-small { padding: 8px 16px; font-size: 13px; }
+        .btn-primary {
+            background: var(--pmw-cyan);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
         
         /* Stats Grid */
-        .stats {
+        .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
         }
         
         .stat-card {
             background: white;
-            border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s;
         }
         
-        .stat-icon { font-size: 32px; margin-bottom: 12px; }
-        .stat-value { font-size: 36px; font-weight: 800; margin-bottom: 4px; }
-        .stat-label { font-size: 14px; font-weight: 600; color: #64748b; }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .stat-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: #1a1a2e;
+        }
+        
+        .stat-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--pmw-cyan);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
         
         /* Table */
-        table { width: 100%; border-collapse: collapse; }
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
         
         th {
+            background: #f7fafc;
+            padding: 16px;
             text-align: left;
-            padding: 12px;
-            font-size: 12px;
             font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
+            color: #2d3748;
             border-bottom: 2px solid #e2e8f0;
         }
         
         td {
-            padding: 16px 12px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 14px;
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
         }
         
-        tr:hover { background: #f8fafc; }
+        tr:hover {
+            background: #f7fafc;
+        }
         
-        /* Badges */
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
+        /* Status Badge */
+        .status-badge {
+            padding: 6px 12px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
+            display: inline-block;
         }
         
-        .badge-plate { background: #f1f5f9; color: #1e293b; }
-        .badge-purpose { background: #dbeafe; color: #1e40af; }
-        .badge-in { background: #dcfce7; color: #166534; }
-        .badge-out { background: #f1f5f9; color: #475569; }
-        .badge-day { background: #fef3c7; color: #92400e; }
-        .badge-night { background: #ddd6fe; color: #5b21b6; }
+        .status-in {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-out {
+            background: #dcfce7;
+            color: #166534;
+        }
         
         /* Modal */
         .modal {
@@ -181,25 +458,33 @@
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
             padding: 20px;
         }
         
-        .modal.show { display: flex; }
+        .modal.active {
+            display: flex;
+        }
         
         .modal-content {
             background: white;
-            border-radius: 20px;
-            padding: 40px;
+            border-radius: 16px;
+            padding: 32px;
             max-width: 600px;
             width: 100%;
             max-height: 90vh;
             overflow-y: auto;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
         }
         
         .modal-header {
@@ -209,1780 +494,1404 @@
             margin-bottom: 24px;
         }
         
-        .modal-title { font-size: 24px; font-weight: 700; }
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
         
         .close-btn {
-            background: transparent;
+            background: none;
             border: none;
             font-size: 24px;
             cursor: pointer;
-            color: #94a3b8;
+            color: #64748b;
             padding: 0;
             width: 32px;
             height: 32px;
-        }
-        
-        /* Form */
-        .form-group { margin-bottom: 20px; }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            color: #1e293b;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 2px solid #e2e8f0;
-            font-size: 14px;
-            font-family: inherit;
-        }
-        
-        .form-group textarea { min-height: 100px; resize: vertical; }
-        
-        .required { color: #ef4444; }
-        
-        /* Grid layouts */
-        .driver-grid,
-        .guard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
-        }
-        
-        .item-card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            position: relative;
-        }
-        
-        .item-card-header {
-            margin-bottom: 16px;
-            padding-right: 40px;
-        }
-        
-        .item-card h3 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-        
-        .item-card p {
-            color: #64748b;
-            font-size: 14px;
-        }
-        
-        .delete-btn {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            background: #fee2e2;
-            color: #dc2626;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-        }
-        
-        .info-row {
             display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f1f5f9;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
         
-        .info-label {
-            font-size: 13px;
-            color: #64748b;
-            font-weight: 600;
+        .close-btn:hover {
+            background: #f1f5f9;
+            color: #1a1a2e;
         }
         
-        .info-value {
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e293b;
+        /* Search */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
         }
         
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #10b981;
-            color: white;
-            padding: 16px 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            z-index: 2000;
-            display: none;
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+        
+        /* Alert */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
             align-items: center;
             gap: 12px;
-            font-weight: 600;
-            max-width: 400px;
+            font-weight: 500;
         }
         
-        .notification.show { display: flex; }
-        .notification.error { background: #ef4444; }
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
         
-        /* Empty state */
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border-left: 4px solid #10b981;
+        }
+        
+        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #94a3b8;
         }
         
-        .empty-icon { font-size: 64px; opacity: 0.3; margin-bottom: 16px; }
-        
-        /* Hidden */
-        .hidden { display: none !important; }
-        
-        /* QR Code */
-        .qr-container {
-            border: 3px solid #667eea;
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            margin: 24px 0;
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
         }
         
-        /* Report selector */
-        .report-selector {
+        /* Admin Panel */
+        .admin-tabs {
             display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e2e8f0;
+            overflow-x: auto;
         }
         
-        .report-btn {
-            flex: 1;
-            min-width: 200px;
-            padding: 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            background: white;
+        .admin-tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .report-btn:hover {
-            border-color: #667eea;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
-        }
-        
-        .report-btn.active {
-            border-color: #667eea;
-            background: #f0f4ff;
-        }
-        
-        .report-title {
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: #1e293b;
-        }
-        
-        .report-desc {
-            font-size: 12px;
+            font-weight: 600;
             color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
         }
         
-        /* Admin panel */
-        .admin-indicator {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: #7c3aed;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            z-index: 100;
+        .admin-tab:hover {
+            color: var(--pmw-cyan);
+        }
+        
+        .admin-tab.active {
+            color: var(--pmw-cyan);
+            border-bottom-color: var(--pmw-cyan);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
         
         /* Responsive */
         @media (max-width: 768px) {
-            .nav { padding: 12px 16px; }
-            .nav-title { font-size: 18px; }
-            .card { padding: 20px; }
-            .modal-content { padding: 24px; }
-            .stats { grid-template-columns: 1fr; }
-            table { font-size: 12px; }
-            th, td { padding: 8px; }
+            .nav {
+                padding: 16px;
+            }
+            
+            .nav-title {
+                font-size: 16px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                padding: 24px;
+            }
+
+            .terms-header h1 {
+                font-size: 24px;
+            }
+
+            .terms-content {
+                padding: 24px;
+            }
+
+            .terms-footer {
+                padding: 20px 24px;
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--pmw-cyan);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="notification" id="notification">
-        <span id="notificationText"></span>
-    </div>
 
-    <div class="nav">
-        <div class="nav-title">
-            🚛 Lorry Tracking System
+<!-- ========================================
+     TERMS & CONDITIONS PAGE
+======================================== -->
+<div id="termsPage">
+    <div class="terms-container">
+        <div class="terms-header">
+            <h1>🚛 OSHES Lorry Tracking System</h1>
+            <p>Occupational Safety, Health, and Environment System</p>
         </div>
-        
-        <div id="guardStatusBadge" class="guard-status inactive">
-            ⚠️ No Guard On Duty
+
+        <div class="terms-content">
+            <h2>📋 Terms and Conditions</h2>
+            <p>Welcome to the OSHES Lorry Tracking System. Before accessing the system, please read and accept the following terms and conditions.</p>
+
+            <h2>🎯 Purpose of This System</h2>
+            <p>This system is designed to:</p>
+            <ul>
+                <li>Track and record all lorry visits to the premises</li>
+                <li>Maintain accurate records of driver information and visit times</li>
+                <li>Ensure safety and security compliance</li>
+                <li>Provide real-time monitoring for guards and administrators</li>
+            </ul>
+
+            <h2>👤 User Responsibilities</h2>
+            <p><strong>As a user of this system, you agree to:</strong></p>
+            <ul>
+                <li><strong>Accuracy:</strong> Provide accurate and truthful information when recording visits</li>
+                <li><strong>Security:</strong> Keep your login credentials confidential and not share them with others</li>
+                <li><strong>Proper Use:</strong> Use the system only for authorized tracking and monitoring purposes</li>
+                <li><strong>Data Privacy:</strong> Respect the privacy of driver information and visit records</li>
+                <li><strong>Reporting:</strong> Report any system errors or suspicious activities immediately</li>
+            </ul>
+
+            <div class="warning-box">
+                <strong>⚠️ Important:</strong> Unauthorized access, data manipulation, or misuse of this system may result in disciplinary action and/or legal consequences.
+            </div>
+
+            <h2>🔒 Data Protection & Privacy</h2>
+            <ul>
+                <li>All data is stored securely and encrypted</li>
+                <li>Personal information is handled in accordance with data protection regulations</li>
+                <li>Access to data is restricted to authorized personnel only</li>
+                <li>System logs and audit trails are maintained for security purposes</li>
+            </ul>
+
+            <h2>📱 System Usage Guidelines</h2>
+            <ul>
+                <li><strong>Check-In:</strong> Record lorry arrival immediately upon entry to premises</li>
+                <li><strong>Verification:</strong> Verify driver identification and vehicle plate numbers</li>
+                <li><strong>Check-Out:</strong> Record lorry departure before exit from premises</li>
+                <li><strong>Shift Handover:</strong> Guards must properly end their shift and hand over to the next guard</li>
+            </ul>
+
+            <h2>🛡️ Safety & Compliance</h2>
+            <p>This system supports our commitment to:</p>
+            <ul>
+                <li>Workplace safety and security</li>
+                <li>Occupational health regulations</li>
+                <li>Environmental protection standards</li>
+                <li>Quality management systems</li>
+            </ul>
+
+            <h2>📞 Support & Assistance</h2>
+            <p>For technical support or questions about the system, please contact:</p>
+            <ul>
+                <li><strong>Admin Support:</strong> Contact your system administrator</li>
+                <li><strong>Technical Issues:</strong> Report via the admin panel or supervisor</li>
+                <li><strong>Emergency:</strong> Follow standard emergency protocols</li>
+            </ul>
+
+            <h2>✅ Acknowledgment</h2>
+            <p>By clicking "I Accept and Proceed" below, you acknowledge that you have read, understood, and agree to comply with these terms and conditions. You also confirm that you are authorized to use this system.</p>
         </div>
-        
-        <div class="nav-buttons">
-            <button class="nav-btn active" onclick="showView('dashboard')">Dashboard</button>
-            <button class="nav-btn" onclick="showView('drivers')">Drivers</button>
-            <button class="nav-btn" onclick="showView('logs')">Logs</button>
-            <button class="nav-btn" onclick="showView('reports')">Reports</button>
-            <button class="nav-btn" onclick="showView('shift')">Shift</button>
-            <button class="nav-btn" onclick="showView('setup'); initializeConfigView();">⚙️ Setup</button>
+
+        <div class="terms-footer">
+            <div class="checkbox-container">
+                <input type="checkbox" id="acceptCheckbox">
+                <label for="acceptCheckbox">
+                    I have read and agree to the Terms and Conditions. I understand my responsibilities as a user of the OSHES Lorry Tracking System.
+                </label>
+            </div>
+            <button class="accept-btn" id="acceptBtn" disabled>
+                I Accept and Proceed to System
+            </button>
         </div>
     </div>
+</div>
 
+<!-- ========================================
+     MAIN APPLICATION (Hidden initially)
+======================================== -->
+<div id="mainApp">
     <div class="container">
-        <!-- Dashboard View -->
-        <div id="dashboard-view">
-            <div class="stats">
-                <div class="stat-card">
-                    <div class="stat-icon">👥</div>
-                    <div class="stat-value" id="stat-onsite">0</div>
-                    <div class="stat-label">Currently On-Site</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">🚛</div>
-                    <div class="stat-value" id="stat-drivers">0</div>
-                    <div class="stat-label">Total Drivers</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📋</div>
-                    <div class="stat-value" id="stat-today">0</div>
-                    <div class="stat-label">Today's Visits</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">👮</div>
-                    <div class="stat-value" id="stat-guards">0</div>
-                    <div class="stat-label">Guards On Duty</div>
-                </div>
+        <!-- Navigation -->
+        <div class="nav">
+            <div class="nav-title" onclick="tripleClickAdminAccess(event)">
+                🚛 OSHES Lorry Tracking
             </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Currently On-Site</h2>
-                    <button class="btn btn-primary" onclick="exportQuickReport()">
-                        📥 Quick Export
-                    </button>
-                </div>
-                <div id="onsite-table"></div>
+            <div class="guard-status" id="guardStatus">
+                <span id="guardStatusText">⏸️ No Active Shift</span>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn" onclick="showGuardShiftModal()">🔄 Start Shift</button>
             </div>
         </div>
 
-        <!-- Drivers View -->
-        <div id="drivers-view" class="hidden">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Driver Management</h2>
-                    <button class="btn btn-primary" onclick="openModal('addDriverModal')">
-                        ➕ Add Driver
-                    </button>
-                </div>
-                <div id="drivers-list" class="driver-grid"></div>
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🚛</div>
+                <div class="stat-label">Currently In Premises</div>
+                <div class="stat-value" id="currentlyIn">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label">Total Today</div>
+                <div class="stat-value" id="totalToday">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-label">Checked Out</div>
+                <div class="stat-value" id="checkedOut">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div class="stat-label">My Shift Records</div>
+                <div class="stat-value" id="myShiftRecords">0</div>
             </div>
         </div>
 
-        <!-- Logs View -->
-        <div id="logs-view" class="hidden">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Visit Logs</h2>
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                        <input type="date" id="logDateFilter" class="btn btn-secondary btn-small">
-                        <button class="btn btn-secondary btn-small" onclick="clearLogFilters()">Clear</button>
-                    </div>
-                </div>
-                <div id="logs-table"></div>
+        <!-- Main Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📝 Lorry Check-In / Check-Out</h2>
+                <div class="alert alert-error" id="errorAlert" style="display: none;"></div>
             </div>
-        </div>
 
-        <!-- Reports View -->
-        <div id="reports-view" class="hidden">
-            <div class="card">
-                <h2 class="card-title" style="margin-bottom: 24px;">Generate Reports</h2>
+            <!-- Search Driver -->
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchDriver"
+                    placeholder="Search driver by ID, name, or lorry plate..."
+                    onkeyup="searchDriver()"
+                >
+            </div>
+
+            <!-- Driver Selection Dropdown -->
+            <div class="form-group" id="driverDropdownContainer">
+                <label class="form-label">Quick Select Registered Driver</label>
+                <select class="form-select" id="driverSelect" onchange="fillDriverDetails()">
+                    <option value="">-- Select a Driver --</option>
+                </select>
+            </div>
+
+            <!-- Check-In Form -->
+            <form id="checkInForm" onsubmit="handleCheckIn(event)">
+
                 
-                <div class="report-selector">
-                    <div class="report-btn active" onclick="selectReport('shift')">
-                        <div class="report-title">📊 Shift Summary Report</div>
-                        <div class="report-desc">Guards, visitors, and shift activities</div>
-                    </div>
-                    <div class="report-btn" onclick="selectReport('guard')">
-                        <div class="report-title">👮 Guard Activity Report</div>
-                        <div class="report-desc">Individual guard performance & stats</div>
-                    </div>
-                    <div class="report-btn" onclick="selectReport('daily')">
-                        <div class="report-title">📅 Daily Operations Report</div>
-                        <div class="report-desc">Complete daily activities log</div>
-                    </div>
-                    <div class="report-btn" onclick="selectReport('duration')">
-                        <div class="report-title">⏱️ Visitor Duration Report</div>
-                        <div class="report-desc">Time on-site analysis by shift</div>
-                    </div>
-                </div>
-
                 <div class="form-group">
-                    <label>Date Range</label>
-                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                        <input type="date" id="reportStartDate" style="flex: 1; min-width: 150px;">
-                        <input type="date" id="reportEndDate" style="flex: 1; min-width: 150px;">
-                    </div>
+                    <label class="form-label">Driver Name</label>
+                    <input type="text" class="form-input" id="driverName" required>
                 </div>
-
-                <button class="btn btn-primary" onclick="generateReport()" style="width: 100%; margin-top: 20px;">
-                    📥 Generate & Download Report
+                
+                <div class="form-group">
+                    <label class="form-label">Lorry Plate Number</label>
+                    <input type="text" class="form-input" id="lorryPlate" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-input" id="company" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Purpose of Visit</label>
+                    <input type="text" class="form-input" id="purpose" required>
+                </div>
+                
+                <button type="submit" class="btn btn-success" style="width: 100%;">
+                    ✅ Check In Lorry
                 </button>
-            </div>
-        </div>
-
-        <!-- Shift Management View -->
-        <div id="shift-view" class="hidden">
-            <div class="card">
-                <h2 class="card-title" style="margin-bottom: 24px;">Shift Management</h2>
-                
-                <div id="activeShifts" style="margin-bottom: 32px;"></div>
-                
-                <div style="display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap;">
-                    <button class="btn btn-success" onclick="openModal('startShiftModal')">
-                        ▶️ Start Shift
-                    </button>
-                    <button class="btn btn-danger" onclick="endShift()">
-                        ⏹️ End My Shift
-                    </button>
-                    <button class="btn btn-secondary" onclick="openModal('shiftHistoryModal')">
-                        📜 Shift History
-                    </button>
-                </div>
-
-                <div id="myShiftStats"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Setup/Configuration View (Hidden by default) -->
-    <div id="setup-view" class="hidden">
-        <div class="container">
-            <div class="card">
-                <h2 style="margin-bottom: 24px;">⚙️ Database Configuration</h2>
-                
-                <div style="background: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 24px; color: #1e40af;">
-                    <strong>ℹ️ Current Status:</strong> <span id="config-status">Credentials are configured</span>
-                </div>
-
-                <div class="form-group">
-                    <label>Supabase Project URL:</label>
-                    <input type="text" id="config-supabase-url" placeholder="https://xxxxx.supabase.co" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e2e8f0;">
-                </div>
-
-                <div class="form-group">
-                    <label>Supabase Anon Key:</label>
-                    <input type="text" id="config-supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e2e8f0;">
-                </div>
-
-                <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <button class="btn btn-primary" onclick="saveConfiguration()">💾 Save Configuration</button>
-                    <button class="btn btn-secondary" onclick="testConfiguration()">🔌 Test Connection</button>
-                    <button class="btn btn-secondary" onclick="loadCurrentConfig()">📋 Load Current</button>
-                </div>
-
-                <div style="margin-top: 32px; padding: 20px; background: #fef2f2; border-radius: 8px; border: 2px solid #fca5a5;">
-                    <h3 style="margin-bottom: 16px; color: #dc2626;">⚠️ IMPORTANT: Database Schema Required</h3>
-                    <p style="margin-bottom: 12px; color: #991b1b; font-weight: 600;">
-                        If you see "Error loading data", you need to run the database schema first!
-                    </p>
-                    <ol style="margin-left: 20px; line-height: 1.8; color: #7f1d1d;">
-                        <li>Go to your Supabase project → <strong>SQL Editor</strong></li>
-                        <li>Open the <strong>database-schema.sql</strong> file provided</li>
-                        <li>Copy ALL the SQL code (entire file)</li>
-                        <li>Paste into SQL Editor and click <strong>RUN</strong></li>
-                        <li>Wait for "Success" message</li>
-                        <li>Refresh this page</li>
-                    </ol>
-                    <p style="margin-top: 12px; font-size: 13px; color: #991b1b;">
-                        📄 The database-schema.sql file was provided with this system. It creates all required tables (guards, drivers, visit_logs, guard_shifts).
-                    </p>
-                </div>
-
-                <div style="margin-top: 32px; padding: 20px; background: #f8fafc; border-radius: 8px;">
-                    <h3 style="margin-bottom: 16px;">📚 Setup Instructions</h3>
-                    <ol style="margin-left: 20px; line-height: 1.8; color: #64748b;">
-                        <li>Go to your Supabase project at <a href="https://supabase.com/dashboard" target="_blank" style="color: #667eea;">supabase.com/dashboard</a></li>
-                        <li>Navigate to <strong>Settings → API</strong></li>
-                        <li>Copy your <strong>Project URL</strong> and <strong>anon/public key</strong></li>
-                        <li>Paste them above and click <strong>Save Configuration</strong></li>
-                        <li>Click <strong>Test Connection</strong> to verify</li>
-                    </ol>
-                </div>
-
-                <div style="margin-top: 24px; padding: 16px; background: #fef3c7; border-radius: 8px; color: #92400e;">
-                    <strong>⚠️ Important:</strong> Configuration is stored in your browser's localStorage. You'll need to configure each device separately.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Admin Panel (Hidden - access via triple-click on logo) -->
-    <div id="admin-panel" class="hidden">
-        <div class="admin-indicator">ADMIN MODE</div>
-        <div class="container">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">🔒 Admin Panel</h2>
-                    <button class="btn btn-danger btn-small" onclick="exitAdminMode()">Exit Admin</button>
-                </div>
-                
-                <div style="margin-bottom: 32px;">
-                    <h3 style="margin-bottom: 16px;">Guard Management</h3>
-                    <button class="btn btn-primary" onclick="openModal('addGuardModal')">
-                        ➕ Add Guard
-                    </button>
-                </div>
-
-                <div id="guards-list" class="guard-grid"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    
-    <!-- Add Driver Modal -->
-    <div id="addDriverModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Add New Driver</h2>
-                <button class="close-btn" onclick="closeModal('addDriverModal')">×</button>
-            </div>
-            <form id="addDriverForm" onsubmit="addDriver(event)">
-                <div class="form-group">
-                    <label>Driver Name <span class="required">*</span></label>
-                    <input type="text" name="name" placeholder="John Tan" required>
-                </div>
-                <div class="form-group">
-                    <label>Lorry Plate <span class="required">*</span></label>
-                    <input type="text" name="lorryPlate" placeholder="WXY1234A" required>
-                </div>
-                <div class="form-group">
-                    <label>Company <span class="required">*</span></label>
-                    <input type="text" name="company" placeholder="ABC Logistics" required>
-                </div>
-                <div class="form-group">
-                    <label>Phone</label>
-                    <input type="tel" name="phone" placeholder="+60 12-345 6789">
-                </div>
-                <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addDriverModal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Driver</button>
-                </div>
             </form>
         </div>
-    </div>
 
-    <!-- Add Guard Modal -->
-    <div id="addGuardModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Add New Guard</h2>
-                <button class="close-btn" onclick="closeModal('addGuardModal')">×</button>
+        <!-- Active Lorries Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">🚛 Currently In Premises</h2>
             </div>
-            <form id="addGuardForm" onsubmit="addGuard(event)">
-                <div class="form-group">
-                    <label>Guard Name <span class="required">*</span></label>
-                    <input type="text" name="name" placeholder="e.g., Ahmad bin Hassan" required>
-                </div>
-                <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addGuardModal')">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="flex: 1;">Add Guard</button>
-                </div>
-            </form>
+            <div class="table-container">
+                <table id="activeTable">
+                    <thead>
+                        <tr>
+                            <th>Time In</th>
+                            <th>Driver</th>
+                            <th>Lorry Plate</th>
+                            <th>Company</th>
+                            <th>Purpose</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeTableBody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📭</div>
+                                    <p>No lorries currently in premises</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- History Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📜 Recent History</h2>
+            </div>
+            <div class="table-container">
+                <table id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Driver</th>
+                            <th>Lorry Plate</th>
+                            <th>Company</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody">
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">📋</div>
+                                    <p>No history records</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+</div>
 
-    <!-- Start Shift Modal -->
-    <div id="startShiftModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Start Shift</h2>
-                <button class="close-btn" onclick="closeModal('startShiftModal')">×</button>
-            </div>
-            <form id="startShiftForm" onsubmit="startShift(event)">
-                <div class="form-group">
-                    <label>Select Your Name <span class="required">*</span></label>
-                    <select name="guardId" id="guardSelect" required>
-                        <option value="">-- Select Guard --</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Shift Type <span class="required">*</span></label>
-                    <select name="shiftType" required>
-                        <option value="">-- Select Shift --</option>
-                        <option value="Day">Day Shift (7am - 7pm)</option>
-                        <option value="Night">Night Shift (7pm - 7am)</option>
-                    </select>
-                </div>
-                <div style="display: flex; gap: 12px; margin-top: 24px;">
-                    <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal('startShiftModal')">Cancel</button>
-                    <button type="submit" class="btn btn-success" style="flex: 1;">Start Shift</button>
-                </div>
-            </form>
+<!-- Guard Shift Modal -->
+<div class="modal" id="shiftModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">🔄 Guard Shift Management</h3>
+            <button class="close-btn" onclick="closeShiftModal()">×</button>
         </div>
-    </div>
-
-    <!-- QR Code & Check-in Modal -->
-    <div id="qrModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="qrDriverName"></h2>
-                <button class="close-btn" onclick="closeModal('qrModal')">×</button>
-            </div>
-            <div id="qrDriverInfo"></div>
-            <div class="qr-container" id="qrCode"></div>
-            
+        
+        <div id="shiftStartSection">
             <div class="form-group">
-                <label>Guard Processing <span class="required">*</span></label>
-                <select id="processingGuard" required>
+                <label class="form-label">Select Guard</label>
+                <select class="form-select" id="shiftGuardSelect">
                     <option value="">-- Select Your Name --</option>
                 </select>
             </div>
             
             <div class="form-group">
-                <label>Purpose of Visit <span class="required">*</span></label>
-                <select id="visitPurpose" required>
-                    <option value="">-- Select Purpose --</option>
-                    <option value="Delivery">Delivery</option>
-                    <option value="Pickup">Pickup</option>
-                    <option value="Maintenance">Maintenance</option>
-                    <option value="Installation">Installation</option>
-                    <option value="Collection">Collection</option>
-                    <option value="Raw Material">Raw Material</option>
-                    <option value="Finished Goods">Finished Goods</option>
-                    <option value="Other">Other</option>
+                <label class="form-label">Shift Type</label>
+                <select class="form-select" id="shiftType">
+                    <option value="Day">Day Shift</option>
+                    <option value="Night">Night Shift</option>
                 </select>
             </div>
             
-            <div style="display: flex; gap: 12px; margin-top: 24px;">
-                <button class="btn btn-secondary" style="flex: 1;" onclick="closeModal('qrModal')">Cancel</button>
-                <button class="btn btn-primary" style="flex: 1;" onclick="processCheckIn()">✓ Check In/Out</button>
+            <div class="form-group">
+                <label class="form-label">Notes (Optional)</label>
+                <input type="text" class="form-input" id="shiftNotes" placeholder="Any special notes...">
+            </div>
+            
+            <button class="btn btn-success" style="width: 100%;" onclick="startShift()">
+                ✅ Start My Shift
+            </button>
+        </div>
+        
+        <div id="shiftEndSection" style="display: none;">
+            <div class="alert alert-success">
+                <strong>Active Shift:</strong> <span id="currentShiftInfo"></span>
+            </div>
+            
+            <button class="btn btn-danger" style="width: 100%;" onclick="endShift()">
+                🛑 End My Shift
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Panel Modal -->
+<div class="modal" id="adminModal">
+    <div class="modal-content" style="max-width: 1000px;">
+        <div class="modal-header">
+            <h3 class="modal-title">⚙️ Admin Panel</h3>
+            <button class="close-btn" onclick="closeAdminModal()">×</button>
+        </div>
+
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchAdminTab('guards')">👤 Guards</button>
+            <button class="admin-tab" onclick="switchAdminTab('drivers')">🚗 Drivers</button>
+            <button class="admin-tab" onclick="switchAdminTab('logs')">📊 All Logs</button>
+            <button class="admin-tab" onclick="switchAdminTab('shifts')">🔄 Shifts</button>
+        </div>
+
+        <!-- Guards Tab -->
+        <div class="tab-content active" id="guardsTab">
+            <button class="btn btn-primary" onclick="showAddGuardForm()" style="margin-bottom: 20px;">
+                ➕ Add Guard
+            </button>
+            <div id="addGuardForm" style="display: none; margin-bottom: 20px; padding: 20px; background: #f7fafc; border-radius: 8px;">
+                <h4 style="margin-bottom: 16px;">Add New Guard</h4>
+                <div class="form-group">
+                    <label class="form-label">Guard Name</label>
+                    <input type="text" class="form-input" id="newGuardName">
+                </div>
+                
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-success" onclick="addGuard()">Save Guard</button>
+                    <button class="btn btn-secondary" onclick="hideAddGuardForm()">Cancel</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Badge ID</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="guardsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Drivers Tab -->
+        <div class="tab-content" id="driversTab">
+            <button class="btn btn-primary" onclick="showAddDriverForm()" style="margin-bottom: 20px;">
+                ➕ Add Driver
+            </button>
+            <div id="addDriverForm" style="display: none; margin-bottom: 20px; padding: 20px; background: #f7fafc; border-radius: 8px;">
+                <h4 style="margin-bottom: 16px;">Register New Driver</h4>
+                <div class="form-group">
+                    <label class="form-label">Driver ID</label>
+                    <input type="text" class="form-input" id="newDriverId">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Driver Name</label>
+                    <input type="text" class="form-input" id="newDriverName">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Lorry Plate</label>
+                    <input type="text" class="form-input" id="newDriverPlate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-input" id="newDriverCompany">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-input" id="newDriverPhone">
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-success" onclick="addDriver()">Save Driver</button>
+                    <button class="btn btn-secondary" onclick="hideAddDriverForm()">Cancel</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Driver ID</th>
+                            <th>Name</th>
+                            <th>Lorry Plate</th>
+                            <th>Company</th>
+                            <th>Phone</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="driversTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div class="tab-content" id="logsTab">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Log ID</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Driver</th>
+                            <th>Plate</th>
+                            <th>Status</th>
+                            <th>Guard (In)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logsTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Shifts Tab -->
+        <div class="tab-content" id="shiftsTab">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Guard</th>
+                            <th>Shift Type</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Duration</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shiftsTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // ============================================
-        // CONFIGURATION
-        // ============================================
-        
-        // IMPORTANT: Replace with your Supabase credentials
-        // OR configure via the Setup page
-        const DEFAULT_SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
-        const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIxOTAsImV4cCI6MjA4NjE5ODE5MH0.bTt1PHWCuRPvtWeFA61t6VqshT9uBIiwiFuMrFu9iGc';
-        
-        // Check for stored configuration
-        let SUPABASE_URL = DEFAULT_SUPABASE_URL;
-        let SUPABASE_ANON_KEY = DEFAULT_SUPABASE_ANON_KEY;
-        
-        const storedConfig = localStorage.getItem('supabase_config');
-        if (storedConfig) {
-            try {
-                const config = JSON.parse(storedConfig);
-                SUPABASE_URL = config.url || DEFAULT_SUPABASE_URL;
-                SUPABASE_ANON_KEY = config.key || DEFAULT_SUPABASE_ANON_KEY;
-                console.log('Using stored Supabase configuration');
-            } catch (e) {
-                console.error('Error loading stored config:', e);
-            }
-        }
-        
-        // Initialize Supabase client
-        let supabaseClient;
-        try {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-            console.log('Supabase client initialized successfully');
-        } catch (error) {
-            console.error('Failed to initialize Supabase:', error);
-            alert('Database connection failed. Please check your configuration in the Setup page.');
-        }
-        
-        // ============================================
-        // STATE MANAGEMENT
-        // ============================================
-        
-        let drivers = [];
-        let guards = [];
-        let visitLogs = [];
-        let activeShifts = [];
-        let currentDriver = null;
-        let isAdminMode = false;
-        let selectedReportType = 'shift';
-        
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        
-        async function init() {
-            await loadAllData();
-            updateAllUI();
-            setupAdminAccess();
-            setDefaultDates();
-        }
-        
-        function setupAdminAccess() {
-            // Triple-click on logo to enter admin mode
-            const logo = document.querySelector('.nav-title');
-            let clickCount = 0;
-            let clickTimer = null;
-            
-            logo.addEventListener('click', () => {
-                clickCount++;
-                if (clickCount === 1) {
-                    clickTimer = setTimeout(() => { clickCount = 0; }, 1000);
-                } else if (clickCount === 3) {
-                    clearTimeout(clickTimer);
-                    clickCount = 0;
-                    const password = prompt('Enter admin password:');
-                    if (password === 'admin123') { // Change this in production!
-                        enterAdminMode();
-                    } else if (password !== null) {
-                        showNotification('Invalid password', 'error');
-                    }
-                }
-            });
-        }
-        
-        function enterAdminMode() {
-            isAdminMode = true;
-            document.getElementById('admin-panel').classList.remove('hidden');
-            document.querySelectorAll('#dashboard-view, #drivers-view, #logs-view, #reports-view, #shift-view').forEach(v => v.classList.add('hidden'));
-            showNotification('Admin mode activated');
-        }
-        
-        function exitAdminMode() {
-            isAdminMode = false;
-            document.getElementById('admin-panel').classList.add('hidden');
-            showView('dashboard');
-        }
-        
-        function setDefaultDates() {
-            const today = new Date().toISOString().split('T')[0];
-            const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            document.getElementById('reportStartDate').value = weekAgo;
-            document.getElementById('reportEndDate').value = today;
-        }
-        
-        // ============================================
-        // DATA LOADING
-        // ============================================
-        
-        async function loadAllData() {
-            try {
-                // Test database connection first
-                const { error: connectionError } = await supabaseClient
-                    .from('guards')
-                    .select('count')
-                    .limit(1);
-                
-                if (connectionError) {
-                    console.error('Database connection error:', connectionError);
-                    
-                    // Check if it's a table not found error
-                    if (connectionError.message.includes('relation') || 
-                        connectionError.message.includes('does not exist') ||
-                        connectionError.code === '42P01') {
-                        showNotification('Database tables not found. Please run the database schema SQL in Supabase first. See Setup tab for instructions.', 'error');
-                    } else {
-                        showNotification('Database connection error. Check your Supabase configuration in the Setup tab.', 'error');
-                    }
-                    return;
-                }
-                
-                await Promise.all([
-                    loadDrivers(),
-                    loadGuards(),
-                    loadVisitLogs(),
-                    loadActiveShifts()
-                ]);
-            } catch (error) {
-                console.error('Error loading data:', error);
-                showNotification('Error loading data: ' + error.message, 'error');
-            }
-        }
-        
-        async function loadDrivers() {
-            const { data, error } = await supabaseClient
-                .from('drivers')
-                .select('*')
-                .eq('is_active', true)
-                .order('name');
-            
-            if (error) throw error;
-            drivers = data || [];
-        }
-        
-        async function loadGuards() {
-            const { data, error } = await supabaseClient
-                .from('guards')
-                .select('*')
-                .eq('is_active', true)
-                .order('name');
-            
-            if (error) throw error;
-            guards = data || [];
-        }
-        
-        async function loadVisitLogs() {
-            const { data, error } = await supabaseClient
-                .from('visit_logs')
-                .select('*')
-                .order('check_in_time', { ascending: false })
-                .limit(100);
-            
-            if (error) throw error;
-            visitLogs = data || [];
-        }
-        
-        async function loadActiveShifts() {
-            const { data, error } = await supabaseClient
-                .from('guard_shifts')
-                .select(`
-                    *,
-                    guards (name, badge_id)
-                `)
-                .is('shift_end', null);
-            
-            if (error) throw error;
-            activeShifts = data || [];
-        }
-        
-        // ============================================
-        // UI UPDATES
-        // ============================================
-        
-        function updateAllUI() {
-            updateStats();
-            updateOnsiteTable();
-            updateDriversList();
-            updateGuardsList();
-            updateLogsTable();
-            updateGuardStatus();
-            updateActiveShiftsDisplay();
-            updateMyShiftStats();
-        }
-        
-        function updateStats() {
-            const onsite = visitLogs.filter(log => log.status === 'in').length;
-            const today = visitLogs.filter(log => {
-                const logDate = new Date(log.check_in_time).toDateString();
-                return logDate === new Date().toDateString();
-            }).length;
-            
-            document.getElementById('stat-onsite').textContent = onsite;
-            document.getElementById('stat-drivers').textContent = drivers.length;
-            document.getElementById('stat-today').textContent = today;
-            document.getElementById('stat-guards').textContent = activeShifts.length;
-        }
-        
-        function updateGuardStatus() {
-            const badge = document.getElementById('guardStatusBadge');
-            if (activeShifts.length === 0) {
-                badge.className = 'guard-status inactive';
-                badge.innerHTML = '⚠️ No Guard On Duty';
-            } else {
-                badge.className = 'guard-status';
-                const names = activeShifts.map(s => s.guards.name).join(', ');
-                badge.innerHTML = `✅ On Duty: ${names}`;
-            }
-        }
-        
-        function updateOnsiteTable() {
-            const container = document.getElementById('onsite-table');
-            const onsite = visitLogs.filter(log => log.status === 'in');
-            
-            if (onsite.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">🚛</div>
-                        <p style="font-size: 16px; font-weight: 600;">No lorries currently on-site</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = `
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Driver</th>
-                                <th>Plate</th>
-                                <th>Company</th>
-                                <th>Purpose</th>
-                                <th>Check In</th>
-                                <th>Duration</th>
-                                <th>Guard</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${onsite.map(log => `
-                                <tr>
-                                    <td>${log.driver_name}</td>
-                                    <td><span class="badge badge-plate">${log.lorry_plate}</span></td>
-                                    <td>${log.company}</td>
-                                    <td><span class="badge badge-purpose">${log.purpose}</span></td>
-                                    <td>${formatTime(log.check_in_time)}</td>
-                                    <td style="font-weight: 600; color: #667eea;">${calculateDuration(log.check_in_time)}</td>
-                                    <td>${log.checked_in_by_guard_name || '-'}</td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-        
-        function updateDriversList() {
-            const container = document.getElementById('drivers-list');
-            
-            if (drivers.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <div class="empty-icon">🚛</div>
-                        <h3 style="font-size: 24px; margin: 20px 0 12px;">No drivers registered</h3>
-                        <button class="btn btn-primary" onclick="openModal('addDriverModal')">Add First Driver</button>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = drivers.map(driver => `
-                <div class="item-card">
-                    <button class="delete-btn" onclick="deleteDriver('${driver.id}')">×</button>
-                    <div class="item-card-header">
-                        <h3>${driver.name}</h3>
-                        <p>${driver.company}</p>
-                    </div>
-                    <div style="margin-bottom: 16px;">
-                        <div class="info-row">
-                            <span class="info-label">Plate</span>
-                            <span class="info-value">${driver.lorry_plate}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Phone</span>
-                            <span class="info-value">${driver.phone || 'N/A'}</span>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary" style="width: 100%;" onclick="openQRModal('${driver.id}')">
-                        📱 View QR & Check In
-                    </button>
-                </div>
-            `).join('');
-        }
-        
-        function updateGuardsList() {
-            const container = document.getElementById('guards-list');
-            
-            if (guards.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <div class="empty-icon">👮</div>
-                        <h3 style="font-size: 24px; margin: 20px 0 12px;">No guards registered</h3>
-                        <button class="btn btn-primary" onclick="openModal('addGuardModal')">Add First Guard</button>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = guards.map(guard => `
-                <div class="item-card">
-                    <button class="delete-btn" onclick="deleteGuard('${guard.id}')">×</button>
-                    <div class="item-card-header">
-                        <h3>${guard.name}</h3>
-                    </div>
-                    <div style="margin-top: 16px;">
-                        ${activeShifts.some(s => s.guard_id === guard.id) ? 
-                            '<span class="badge badge-in">Currently On Duty</span>' : 
-                            '<span class="badge badge-out">Off Duty</span>'
-                        }
-                    </div>
-                </div>
-            `).join('');
-            
-            // Update guard selects
-            updateGuardSelects();
-        }
-        
-        function updateGuardSelects() {
-            const guardSelect = document.getElementById('guardSelect');
-            const processingGuard = document.getElementById('processingGuard');
-            
-            const guardOptions = guards.map(g => 
-                `<option value="${g.id}">${g.name}</option>`
-            ).join('');
-            
-            guardSelect.innerHTML = '<option value="">-- Select Guard --</option>' + guardOptions;
-            
-            // For processing guard, only show active shift guards
-            const activeGuardOptions = activeShifts.map(s => 
-                `<option value="${s.guard_id}">${s.guards.name}</option>`
-            ).join('');
-            
-            processingGuard.innerHTML = '<option value="">-- Select Your Name --</option>' + activeGuardOptions;
-        }
-        
-        function updateLogsTable() {
-            const container = document.getElementById('logs-table');
-            const dateFilter = document.getElementById('logDateFilter').value;
-            
-            let filteredLogs = visitLogs;
-            if (dateFilter) {
-                filteredLogs = visitLogs.filter(log => {
-                    const logDate = new Date(log.check_in_time).toISOString().split('T')[0];
-                    return logDate === dateFilter;
-                });
-            }
-            
-            if (filteredLogs.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">📋</div>
-                        <p style="font-size: 16px; font-weight: 600;">No logs found</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = `
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Driver</th>
-                                <th>Plate</th>
-                                <th>Company</th>
-                                <th>Purpose</th>
-                                <th>Check In</th>
-                                <th>Check Out</th>
-                                <th>Duration</th>
-                                <th>Guard</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${filteredLogs.map(log => `
-                                <tr>
-                                    <td>${log.driver_name}</td>
-                                    <td><span class="badge badge-plate">${log.lorry_plate}</span></td>
-                                    <td>${log.company}</td>
-                                    <td>${log.purpose}</td>
-                                    <td style="font-size: 12px;">${formatDateTime(log.check_in_time)}</td>
-                                    <td style="font-size: 12px;">${log.check_out_time ? formatDateTime(log.check_out_time) : '-'}</td>
-                                    <td>${log.check_out_time ? calculateDuration(log.check_in_time, log.check_out_time) : '-'}</td>
-                                    <td style="font-size: 12px;">${log.checked_in_by_guard_name || '-'}</td>
-                                    <td><span class="badge badge-${log.status}">${log.status === 'in' ? '● ON-SITE' : 'DEPARTED'}</span></td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-        
-        function updateActiveShiftsDisplay() {
-            const container = document.getElementById('activeShifts');
-            
-            if (activeShifts.length === 0) {
-                container.innerHTML = `
-                    <div style="background: #fef3c7; padding: 16px; border-radius: 12px; text-align: center;">
-                        <p style="font-weight: 600; color: #92400e;">No active shifts. Click "Start Shift" to begin.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = `
-                <h3 style="margin-bottom: 16px;">Active Shifts</h3>
-                <div class="guard-grid">
-                    ${activeShifts.map(shift => `
-                        <div class="item-card">
-                            <h3>${shift.guards.name}</h3>
-                            <div style="margin-top: 16px;">
-                                <span class="badge badge-${shift.shift_type.toLowerCase()}">${shift.shift_type} Shift</span>
-                                <p style="margin-top: 8px; font-size: 13px; color: #64748b;">
-                                    Started: ${formatTime(shift.shift_start)}
-                                </p>
-                                <p style="font-size: 13px; color: #64748b;">
-                                    Duration: ${calculateDuration(shift.shift_start)}
-                                </p>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        function updateMyShiftStats() {
-            const container = document.getElementById('myShiftStats');
-            
-            if (activeShifts.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            // Calculate stats for active shifts
-            const stats = activeShifts.map(shift => {
-                const shiftLogs = visitLogs.filter(log => log.guard_shift_id === shift.id);
-                const processed = shiftLogs.length;
-                const currentlyOnSite = shiftLogs.filter(log => log.status === 'in').length;
-                
-                return `
-                    <div class="card" style="background: #f8fafc;">
-                        <h3 style="margin-bottom: 16px;">${shift.guards.name}'s Shift Stats</h3>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px;">
-                            <div>
-                                <div style="font-size: 24px; font-weight: 800; color: #667eea;">${processed}</div>
-                                <div style="font-size: 13px; color: #64748b;">Visitors Processed</div>
-                            </div>
-                            <div>
-                                <div style="font-size: 24px; font-weight: 800; color: #10b981;">${currentlyOnSite}</div>
-                                <div style="font-size: 13px; color: #64748b;">Currently On-Site</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            container.innerHTML = stats;
-        }
-        
-        // ============================================
-        // DRIVER MANAGEMENT
-        // ============================================
-        
-        async function addDriver(event) {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            
-            try {
-                const driverId = 'DRV' + Date.now();
-                const { data, error } = await supabaseClient
-                    .from('drivers')
-                    .insert([{
-                        driver_id: driverId,
-                        name: formData.get('name'),
-                        lorry_plate: formData.get('lorryPlate').toUpperCase(),
-                        company: formData.get('company'),
-                        phone: formData.get('phone') || null
-                    }])
-                    .select();
-                
-                if (error) throw error;
-                
-                await loadDrivers();
-                updateDriversList();
-                closeModal('addDriverModal');
-                form.reset();
-                showNotification('Driver added successfully');
-            } catch (error) {
-                console.error('Error adding driver:', error);
-                showNotification('Error adding driver', 'error');
-            }
-        }
-        
-        async function deleteDriver(id) {
-            if (!confirm('Delete this driver? This cannot be undone.')) return;
-            
-            try {
-                const { error } = await supabaseClient
-                    .from('drivers')
-                    .update({ is_active: false })
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                await loadDrivers();
-                updateDriversList();
-                showNotification('Driver removed');
-            } catch (error) {
-                console.error('Error deleting driver:', error);
-                showNotification('Error deleting driver', 'error');
-            }
-        }
-        
-        // ============================================
-        // GUARD MANAGEMENT
-        // ============================================
-        
-        async function addGuard(event) {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            const guardName = formData.get('name').trim();
-            
-            // Check for duplicate names (case-insensitive)
-            const duplicateGuard = guards.find(
-                g => g.name.toLowerCase() === guardName.toLowerCase()
-            );
-            
-            if (duplicateGuard) {
-                showNotification(
-                    `A guard named "${duplicateGuard.name}" already exists. Please enter a different name or add their first/last name (e.g., "${guardName} Abdullah" or "Ahmad ${guardName}").`,
-                    'error'
-                );
-                return;
-            }
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('guards')
-                    .insert([{
-                        name: guardName,
-                        badge_id: formData.get('badgeId') || null
-                    }])
-                    .select();
-                
-                if (error) throw error;
-                
-                await loadGuards();
-                updateGuardsList();
-                closeModal('addGuardModal');
-                form.reset();
-                showNotification('Guard added successfully');
-            } catch (error) {
-                console.error('Error adding guard:', error);
-                showNotification('Error adding guard: ' + error.message, 'error');
-            }
-        }
-        
-        async function deleteGuard(id) {
-            if (!confirm('Delete this guard? This cannot be undone.')) return;
-            
-            try {
-                const { error } = await supabaseClient
-                    .from('guards')
-                    .update({ is_active: false })
-                    .eq('id', id);
-                
-                if (error) throw error;
-                
-                await loadGuards();
-                updateGuardsList();
-                showNotification('Guard removed');
-            } catch (error) {
-                console.error('Error deleting guard:', error);
-                showNotification('Error deleting guard', 'error');
-            }
-        }
-        
-        // ============================================
-        // SHIFT MANAGEMENT
-        // ============================================
-        
-        async function startShift(event) {
-            event.preventDefault();
-            const form = event.target;
-            const formData = new FormData(form);
-            const guardId = formData.get('guardId');
-            const shiftType = formData.get('shiftType');
-            
-            // Check if guard already has active shift
-            const existingShift = activeShifts.find(s => s.guard_id === guardId);
-            if (existingShift) {
-                showNotification('You already have an active shift', 'error');
-                return;
-            }
-            
-            try {
-                const { data, error } = await supabaseClient
-                    .from('guard_shifts')
-                    .insert([{
-                        guard_id: guardId,
-                        shift_type: shiftType,
-                        shift_start: new Date().toISOString()
-                    }])
-                    .select();
-                
-                if (error) throw error;
-                
-                await loadActiveShifts();
-                updateAllUI();
-                closeModal('startShiftModal');
-                form.reset();
-                showNotification('Shift started successfully');
-            } catch (error) {
-                console.error('Error starting shift:', error);
-                showNotification('Error starting shift', 'error');
-            }
-        }
-        
-        async function endShift() {
-            if (activeShifts.length === 0) {
-                showNotification('No active shifts to end', 'error');
-                return;
-            }
-            
-            // If multiple guards, ask which one
-            let shiftToEnd;
-            if (activeShifts.length === 1) {
-                shiftToEnd = activeShifts[0];
-            } else {
-                const guardName = prompt('Which guard is ending shift? Enter name:\n' + 
-                    activeShifts.map(s => `- ${s.guards.name}`).join('\n'));
-                shiftToEnd = activeShifts.find(s => 
-                    s.guards.name.toLowerCase().includes(guardName?.toLowerCase() || '')
-                );
-                if (!shiftToEnd) {
-                    showNotification('Guard not found', 'error');
-                    return;
-                }
-            }
-            
-            if (!confirm(`End shift for ${shiftToEnd.guards.name}?`)) return;
-            
-            try {
-                const { error } = await supabaseClient
-                    .from('guard_shifts')
-                    .update({ shift_end: new Date().toISOString() })
-                    .eq('id', shiftToEnd.id);
-                
-                if (error) throw error;
-                
-                await loadActiveShifts();
-                updateAllUI();
-                showNotification('Shift ended successfully');
-            } catch (error) {
-                console.error('Error ending shift:', error);
-                showNotification('Error ending shift', 'error');
-            }
-        }
-        
-        // ============================================
-        // CHECK-IN/OUT PROCESSING
-        // ============================================
-        
-        function openQRModal(driverId) {
-            const driver = drivers.find(d => d.id === driverId);
-            if (!driver) return;
-            
-            currentDriver = driver;
-            
-            document.getElementById('qrDriverName').textContent = driver.name;
-            document.getElementById('qrDriverInfo').innerHTML = `
-                <div style="background: #f8fafc; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                    <div class="info-row">
-                        <span class="info-label">Plate</span>
-                        <span class="info-value">${driver.lorry_plate}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Company</span>
-                        <span class="info-value">${driver.company}</span>
-                    </div>
-                </div>
-            `;
-            
-            document.getElementById('qrCode').innerHTML = generateQRCode(driver.driver_id);
-            openModal('qrModal');
-        }
-        
-        function generateQRCode(driverId) {
-            return `
-                <svg width="200" height="200" viewBox="0 0 200 200" style="margin: 0 auto; display: block;">
-                    <rect width="200" height="200" fill="white"/>
-                    <rect x="20" y="20" width="40" height="40" fill="#667eea"/>
-                    <rect x="140" y="20" width="40" height="40" fill="#667eea"/>
-                    <rect x="20" y="140" width="40" height="40" fill="#667eea"/>
-                    ${[...Array(20)].map((_, i) => {
-                        const x = 70 + ((i * 7) % 6) * 10;
-                        const y = 70 + ((i * 11) % 6) * 10;
-                        return `<rect x="${x}" y="${y}" width="10" height="10" fill="#667eea"/>`;
-                    }).join('')}
-                    <text x="100" y="195" text-anchor="middle" font-size="10" fill="#64748b">${driverId}</text>
-                </svg>
-                <p style="margin-top: 16px; font-size: 12px; color: #64748b; font-weight: 600;">Scan to check in/out</p>
-            `;
-        }
-        
-        async function processCheckIn() {
-            if (!currentDriver) return;
-            
-            const guardId = document.getElementById('processingGuard').value;
-            const purpose = document.getElementById('visitPurpose').value;
-            
-            if (!guardId || !purpose) {
-                showNotification('Please select guard and purpose', 'error');
-                return;
-            }
-            
-            // Find active log for this driver
-            const activeLog = visitLogs.find(log => 
-                log.driver_id === currentDriver.id && log.status === 'in'
-            );
-            
-            try {
-                const guard = guards.find(g => g.id === guardId);
-                const activeShift = activeShifts.find(s => s.guard_id === guardId);
-                
-                if (activeLog) {
-                    // Check out
-                    const { error } = await supabaseClient
-                        .from('visit_logs')
-                        .update({
-                            check_out_time: new Date().toISOString(),
-                            status: 'out',
-                            checked_out_by_guard_id: guardId,
-                            checked_out_by_guard_name: guard?.name
-                        })
-                        .eq('id', activeLog.id);
-                    
-                    if (error) throw error;
-                    showNotification(`${currentDriver.name} checked out`);
-                } else {
-                    // Check in
-                    const logId = 'LOG' + Date.now();
-                    const { error } = await supabaseClient
-                        .from('visit_logs')
-                        .insert([{
-                            log_id: logId,
-                            driver_id: currentDriver.id,
-                            driver_name: currentDriver.name,
-                            lorry_plate: currentDriver.lorry_plate,
-                            company: currentDriver.company,
-                            purpose: purpose,
-                            check_in_time: new Date().toISOString(),
-                            status: 'in',
-                            checked_in_by_guard_id: guardId,
-                            checked_in_by_guard_name: guard?.name,
-                            guard_shift_id: activeShift?.id
-                        }]);
-                    
-                    if (error) throw error;
-                    showNotification(`${currentDriver.name} checked in`);
-                }
-                
-                await loadVisitLogs();
-                updateAllUI();
-                closeModal('qrModal');
-                document.getElementById('visitPurpose').value = '';
-            } catch (error) {
-                console.error('Error processing check-in:', error);
-                showNotification('Error processing check-in', 'error');
-            }
-        }
-        
-        // ============================================
-        // REPORTS
-        // ============================================
-        
-        function selectReport(type) {
-            selectedReportType = type;
-            document.querySelectorAll('.report-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.closest('.report-btn').classList.add('active');
-        }
-        
-        async function generateReport() {
-            const startDate = document.getElementById('reportStartDate').value;
-            const endDate = document.getElementById('reportEndDate').value;
-            
-            if (!startDate || !endDate) {
-                showNotification('Please select date range', 'error');
-                return;
-            }
-            
-            try {
-                // Load data for date range
-                const { data: logs, error } = await supabaseClient
-                    .from('visit_logs')
-                    .select('*')
-                    .gte('check_in_time', startDate)
-                    .lte('check_in_time', endDate + 'T23:59:59');
-                
-                if (error) throw error;
-                
-                const { data: shifts } = await supabaseClient
-                    .from('guard_shifts')
-                    .select(`*, guards(name, badge_id)`)
-                    .gte('shift_start', startDate)
-                    .lte('shift_start', endDate + 'T23:59:59');
-                
-                let csvContent = '';
-                
-                switch (selectedReportType) {
-                    case 'shift':
-                        csvContent = generateShiftSummaryReport(shifts || [], logs || []);
-                        break;
-                    case 'guard':
-                        csvContent = generateGuardActivityReport(shifts || [], logs || []);
-                        break;
-                    case 'daily':
-                        csvContent = generateDailyOperationsReport(logs || []);
-                        break;
-                    case 'duration':
-                        csvContent = generateDurationReport(logs || []);
-                        break;
-                }
-                
-                downloadCSV(csvContent, `${selectedReportType}-report-${startDate}-to-${endDate}.csv`);
-                showNotification('Report generated successfully');
-            } catch (error) {
-                console.error('Error generating report:', error);
-                showNotification('Error generating report', 'error');
-            }
-        }
-        
-        function generateShiftSummaryReport(shifts, logs) {
-            const csv = [
-                ['Shift Summary Report'],
-                ['Generated:', new Date().toLocaleString()],
-                [''],
-                ['Date', 'Guard', 'Shift Type', 'Start Time', 'End Time', 'Duration', 'Visitors Processed', 'Currently On-Site']
-            ];
-            
-            shifts.forEach(shift => {
-                const shiftLogs = logs.filter(l => l.guard_shift_id === shift.id);
-                const onSite = shiftLogs.filter(l => l.status === 'in').length;
-                const duration = shift.shift_end ? 
-                    calculateDuration(shift.shift_start, shift.shift_end) : 'Ongoing';
-                
-                csv.push([
-                    formatDate(shift.shift_start),
-                    shift.guards.name,
-                    shift.shift_type,
-                    formatTime(shift.shift_start),
-                    shift.shift_end ? formatTime(shift.shift_end) : 'Ongoing',
-                    duration,
-                    shiftLogs.length,
-                    onSite
-                ]);
-            });
-            
-            return csv.map(row => row.join(',')).join('\n');
-        }
-        
-        function generateGuardActivityReport(shifts, logs) {
-            const guardStats = {};
-            
-            shifts.forEach(shift => {
-                const guardId = shift.guard_id;
-                if (!guardStats[guardId]) {
-                    guardStats[guardId] = {
-                        name: shift.guards.name,
-                        totalShifts: 0,
-                        totalVisitors: 0,
-                        totalHours: 0
-                    };
-                }
-                
-                guardStats[guardId].totalShifts++;
-                guardStats[guardId].totalVisitors += logs.filter(l => l.guard_shift_id === shift.id).length;
-                
-                if (shift.shift_end) {
-                    const hours = (new Date(shift.shift_end) - new Date(shift.shift_start)) / 3600000;
-                    guardStats[guardId].totalHours += hours;
-                }
-            });
-            
-            const csv = [
-                ['Guard Activity Report'],
-                ['Generated:', new Date().toLocaleString()],
-                [''],
-                ['Guard Name', 'Total Shifts', 'Total Visitors Processed', 'Total Hours Worked', 'Avg Visitors/Shift']
-            ];
-            
-            Object.values(guardStats).forEach(stats => {
-                csv.push([
-                    stats.name,
-                    stats.totalShifts,
-                    stats.totalVisitors,
-                    stats.totalHours.toFixed(1),
-                    (stats.totalVisitors / stats.totalShifts).toFixed(1)
-                ]);
-            });
-            
-            return csv.map(row => row.join(',')).join('\n');
-        }
-        
-        function generateDailyOperationsReport(logs) {
-            const csv = [
-                ['Daily Operations Report'],
-                ['Generated:', new Date().toLocaleString()],
-                [''],
-                ['Date', 'Driver', 'Plate', 'Company', 'Purpose', 'Check In', 'Check Out', 'Duration', 'Guard (In)', 'Guard (Out)', 'Status']
-            ];
-            
-            logs.forEach(log => {
-                csv.push([
-                    formatDate(log.check_in_time),
-                    log.driver_name,
-                    log.lorry_plate,
-                    log.company,
-                    log.purpose,
-                    formatDateTime(log.check_in_time),
-                    log.check_out_time ? formatDateTime(log.check_out_time) : 'Still On-Site',
-                    log.check_out_time ? calculateDuration(log.check_in_time, log.check_out_time) : 'Ongoing',
-                    log.checked_in_by_guard_name || 'N/A',
-                    log.checked_out_by_guard_name || 'N/A',
-                    log.status.toUpperCase()
-                ]);
-            });
-            
-            return csv.map(row => row.join(',')).join('\n');
-        }
-        
-        function generateDurationReport(logs) {
-            const completedLogs = logs.filter(l => l.check_out_time);
-            
-            const csv = [
-                ['Visitor Duration Analysis Report'],
-                ['Generated:', new Date().toLocaleString()],
-                [''],
-                ['Summary Statistics'],
-                ['Total Visits:', completedLogs.length],
-                ['Average Duration (hours):', calculateAverageDuration(completedLogs)],
-                [''],
-                ['Detailed Duration Data'],
-                ['Driver', 'Plate', 'Purpose', 'Check In', 'Check Out', 'Duration (mins)', 'Duration (hrs)']
-            ];
-            
-            completedLogs.forEach(log => {
-                const durationMs = new Date(log.check_out_time) - new Date(log.check_in_time);
-                const durationMins = Math.floor(durationMs / 60000);
-                const durationHrs = (durationMs / 3600000).toFixed(2);
-                
-                csv.push([
-                    log.driver_name,
-                    log.lorry_plate,
-                    log.purpose,
-                    formatDateTime(log.check_in_time),
-                    formatDateTime(log.check_out_time),
-                    durationMins,
-                    durationHrs
-                ]);
-            });
-            
-            return csv.map(row => row.join(',')).join('\n');
-        }
-        
-        function calculateAverageDuration(logs) {
-            if (logs.length === 0) return '0.00';
-            
-            const totalMs = logs.reduce((sum, log) => {
-                return sum + (new Date(log.check_out_time) - new Date(log.check_in_time));
-            }, 0);
-            
-            return (totalMs / logs.length / 3600000).toFixed(2);
-        }
-        
-        function exportQuickReport() {
-            const onsite = visitLogs.filter(log => log.status === 'in');
-            
-            const csv = [
-                ['Quick On-Site Report'],
-                ['Generated:', new Date().toLocaleString()],
-                [''],
-                ['Driver', 'Plate', 'Company', 'Purpose', 'Check In Time', 'Duration', 'Guard']
-            ];
-            
-            onsite.forEach(log => {
-                csv.push([
-                    log.driver_name,
-                    log.lorry_plate,
-                    log.company,
-                    log.purpose,
-                    formatDateTime(log.check_in_time),
-                    calculateDuration(log.check_in_time),
-                    log.checked_in_by_guard_name || 'N/A'
-                ]);
-            });
-            
-            downloadCSV(csv.map(row => row.join(',')).join('\n'), `onsite-report-${new Date().toISOString().split('T')[0]}.csv`);
-            showNotification('Report exported');
-        }
-        
-        function downloadCSV(content, filename) {
-            const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = filename;
-            link.click();
-        }
-        
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-        
-        function calculateDuration(start, end = null) {
-            const startTime = new Date(start);
-            const endTime = end ? new Date(end) : new Date();
-            const diff = endTime - startTime;
-            
-            const hours = Math.floor(diff / 3600000);
-            const minutes = Math.floor((diff % 3600000) / 60000);
-            
-            return `${hours}h ${minutes}m`;
-        }
-        
-        function formatTime(datetime) {
-            return new Date(datetime).toLocaleTimeString('en-MY', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        
-        function formatDate(datetime) {
-            return new Date(datetime).toLocaleDateString('en-MY');
-        }
-        
-        function formatDateTime(datetime) {
-            return new Date(datetime).toLocaleString('en-MY', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        
-        function showView(viewName) {
-            if (isAdminMode) {
-                document.getElementById('admin-panel').classList.add('hidden');
-                isAdminMode = false;
-            }
-            
-            document.querySelectorAll('[id$="-view"]').forEach(v => v.classList.add('hidden'));
-            document.getElementById(viewName + '-view')?.classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            // Use event from global context or find button by viewName
-            if (window.event && window.event.target) {
-                window.event.target.classList.add('active');
-            }
-        }
-        
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('show');
-        }
-        
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-        
-        function showNotification(message, type = 'success') {
-            const notif = document.getElementById('notification');
-            const text = document.getElementById('notificationText');
-            
-            text.textContent = message;
-            notif.className = `notification ${type} show`;
-            
-            // Longer timeout for error messages (5 seconds) to read the full message
-            const timeout = type === 'error' ? 5000 : 3000;
-            
-            setTimeout(() => {
-                notif.classList.remove('show');
-            }, timeout);
-        }
-        
-        function clearLogFilters() {
-            document.getElementById('logDateFilter').value = '';
-            updateLogsTable();
-        }
-        
-        // ============================================
-        // CONFIGURATION MANAGEMENT
-        // ============================================
-        
-        function loadCurrentConfig() {
-            const url = document.getElementById('config-supabase-url');
-            const key = document.getElementById('config-supabase-key');
-            
-            // Try to load from localStorage first
-            const stored = localStorage.getItem('supabase_config');
-            if (stored) {
-                const config = JSON.parse(stored);
-                url.value = config.url || SUPABASE_URL;
-                key.value = config.key || SUPABASE_ANON_KEY;
-            } else {
-                // Load hardcoded values
-                url.value = SUPABASE_URL;
-                key.value = SUPABASE_ANON_KEY;
-            }
-            
-            showNotification('Current configuration loaded');
-        }
-        
-        function saveConfiguration() {
-            const url = document.getElementById('config-supabase-url').value.trim();
-            const key = document.getElementById('config-supabase-key').value.trim();
-            
-            if (!url || !key) {
-                showNotification('Please enter both URL and API key', 'error');
-                return;
-            }
-            
-            // Save to localStorage
-            localStorage.setItem('supabase_config', JSON.stringify({ url, key }));
-            
-            showNotification('Configuration saved! Please refresh the page for changes to take effect.');
-            document.getElementById('config-status').textContent = 'Credentials saved in browser storage';
-        }
-        
-        async function testConfiguration() {
-            const url = document.getElementById('config-supabase-url').value.trim();
-            const key = document.getElementById('config-supabase-key').value.trim();
-            
-            if (!url || !key) {
-                showNotification('Please enter both URL and API key', 'error');
-                return;
-            }
-            
-            try {
-                const testClient = window.supabase.createClient(url, key);
-                const { data, error } = await testClient.from('guards').select('count');
-                
-                if (error) throw error;
-                
-                showNotification('✅ Connection successful!');
-                document.getElementById('config-status').textContent = 'Connection verified successfully';
-            } catch (error) {
-                showNotification('❌ Connection failed: ' + error.message, 'error');
-                document.getElementById('config-status').textContent = 'Connection failed - check credentials';
-            }
-        }
-        
-        // Initialize configuration on setup view
-        function initializeConfigView() {
-            if (document.getElementById('config-supabase-url')) {
-                loadCurrentConfig();
-            }
-        }
-        
-        // ============================================
-        // CLOSE MODALS AND EVENT LISTENERS
-        // ============================================
-        
-        // Close modals when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.remove('show');
-                }
-            });
-        });
-        
-        // Apply log date filter
-        document.getElementById('logDateFilter')?.addEventListener('change', updateLogsTable);
-        
-        // Initialize app
+<script>
+// ========================================
+// TERMS & CONDITIONS LOGIC
+// ========================================
+const acceptCheckbox = document.getElementById('acceptCheckbox');
+const acceptBtn = document.getElementById('acceptBtn');
+const termsPage = document.getElementById('termsPage');
+const mainApp = document.getElementById('mainApp');
+
+// Enable/disable accept button based on checkbox
+acceptCheckbox.addEventListener('change', function() {
+    acceptBtn.disabled = !this.checked;
+});
+
+// Handle accept button click
+acceptBtn.addEventListener('click', function() {
+    // Save acceptance to localStorage (so user doesn't see it again)
+    localStorage.setItem('oshes_terms_accepted', 'true');
+    localStorage.setItem('oshes_terms_accepted_date', new Date().toISOString());
+    
+    // Hide terms page and show main app
+    termsPage.style.display = 'none';
+    mainApp.style.display = 'block';
+    
+    // Initialize the main app
+    init();
+});
+
+// Check if user has already accepted terms
+window.addEventListener('DOMContentLoaded', function() {
+    const termsAccepted = localStorage.getItem('oshes_terms_accepted');
+    
+    if (termsAccepted === 'true') {
+        // User already accepted, go straight to app
+        termsPage.style.display = 'none';
+        mainApp.style.display = 'block';
         init();
-    </script>
+    } else {
+        // Show terms page first
+        termsPage.style.display = 'flex';
+        mainApp.style.display = 'none';
+    }
+});
+
+// Admin function to reset terms (for testing)
+function resetTermsAcceptance() {
+    localStorage.removeItem('oshes_terms_accepted');
+    localStorage.removeItem('oshes_terms_accepted_date');
+    location.reload();
+}
+
+// ========================================
+// MAIN APPLICATION LOGIC
+// ========================================
+
+// Supabase Configuration
+const SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4NDMyMjcsImV4cCI6MjA1MjQxOTIyN30.lFTv09J4hEfCq6RkBRbL7ktVOwSYkfgEvqaCy3OXC3A';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Global State
+let currentShift = null;
+let guards = [];
+let drivers = [];
+let visitLogs = [];
+let guardShifts = [];
+
+// Initialize App
+async function init() {
+    showLoading();
+    await loadAllData();
+    await checkActiveShift();
+    updateAllUI();
+    hideLoading();
+}
+
+function showLoading() {
+    document.getElementById('errorAlert').innerHTML = '<div class="spinner"></div> Loading data...';
+    document.getElementById('errorAlert').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('errorAlert').style.display = 'none';
+}
+
+// Load All Data
+async function loadAllData() {
+    try {
+        const [guardsData, driversData, logsData, shiftsData] = await Promise.all([
+            supabaseClient.from('guards').select('*').order('created_at', { ascending: false }),
+            supabaseClient.from('drivers').select('*').order('created_at', { ascending: false }),
+            supabaseClient.from('visit_logs').select('*').order('check_in_time', { ascending: false }),
+            supabaseClient.from('guard_shifts').select('*').order('shift_start', { ascending: false })
+        ]);
+
+        guards = guardsData.data || [];
+        drivers = driversData.data || [];
+        visitLogs = logsData.data || [];
+        guardShifts = shiftsData.data || [];
+
+    } catch (error) {
+        console.error('Error loading data:', error);
+        showError('Error loading data. Please check database connection.');
+    }
+}
+
+// Check Active Shift
+async function checkActiveShift() {
+    const activeShift = guardShifts.find(shift => shift.shift_end === null);
+    if (activeShift) {
+        currentShift = activeShift;
+        updateGuardStatus();
+    }
+}
+
+// Update Guard Status
+function updateGuardStatus() {
+    const statusEl = document.getElementById('guardStatus');
+    const statusText = document.getElementById('guardStatusText');
+    
+    if (currentShift) {
+        const guard = guards.find(g => g.id === currentShift.guard_id);
+        statusEl.classList.remove('inactive');
+        statusText.textContent = `✅ ${guard?.name || 'Guard'} - ${currentShift.shift_type} Shift`;
+    } else {
+        statusEl.classList.add('inactive');
+        statusText.textContent = '⏸️ No Active Shift';
+    }
+}
+
+// Update All UI
+function updateAllUI() {
+    updateStats();
+    updateActiveTable();
+    updateHistoryTable();
+    updateDriverDropdown();
+    updateGuardDropdown();
+    
+    if (document.getElementById('adminModal').classList.contains('active')) {
+        loadAdminData();
+    }
+}
+
+// Update Statistics
+function updateStats() {
+    const currentlyIn = visitLogs.filter(log => log.status === 'in').length;
+    const today = new Date().toISOString().split('T')[0];
+    const totalToday = visitLogs.filter(log => 
+        log.check_in_time.startsWith(today)
+    ).length;
+    const checkedOut = visitLogs.filter(log => 
+        log.status === 'out' && log.check_in_time.startsWith(today)
+    ).length;
+    const myShiftRecords = currentShift 
+        ? visitLogs.filter(log => log.guard_shift_id === currentShift.id).length 
+        : 0;
+
+    document.getElementById('currentlyIn').textContent = currentlyIn;
+    document.getElementById('totalToday').textContent = totalToday;
+    document.getElementById('checkedOut').textContent = checkedOut;
+    document.getElementById('myShiftRecords').textContent = myShiftRecords;
+}
+
+// Update Active Table
+function updateActiveTable() {
+    const tbody = document.getElementById('activeTableBody');
+    const activeLogs = visitLogs.filter(log => log.status === 'in');
+    
+    if (activeLogs.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No lorries currently in premises</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = activeLogs.map(log => `
+        <tr>
+            <td>${formatDateTime(log.check_in_time)}</td>
+            <td>${log.driver_name}</td>
+            <td>${log.lorry_plate}</td>
+            <td>${log.company}</td>
+            <td>${log.purpose}</td>
+            <td>
+                <button class="btn btn-danger" onclick="checkOutLorry('${log.id}')">
+                    🚪 Check Out
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Update History Table
+function updateHistoryTable() {
+    const tbody = document.getElementById('historyTableBody');
+    const recentLogs = visitLogs.slice(0, 20);
+    
+    if (recentLogs.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>No history records</p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = recentLogs.map(log => `
+        <tr>
+            <td>${formatDateTime(log.check_in_time)}</td>
+            <td>${log.check_out_time ? formatDateTime(log.check_out_time) : '-'}</td>
+            <td>${log.driver_name}</td>
+            <td>${log.lorry_plate}</td>
+            <td>${log.company}</td>
+            <td>
+                <span class="status-badge status-${log.status}">
+                    ${log.status === 'in' ? '🟡 IN' : '✅ OUT'}
+                </span>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Update Driver Dropdown
+function updateDriverDropdown() {
+    const select = document.getElementById('driverSelect');
+    const activeDrivers = drivers.filter(d => d.is_active);
+    
+    select.innerHTML = '<option value="">-- Select a Driver --</option>' +
+        activeDrivers.map(driver => `
+            <option value="${driver.id}">
+                ${driver.name} - ${driver.lorry_plate} (${driver.company})
+            </option>
+        `).join('');
+}
+
+// Update Guard Dropdown
+function updateGuardDropdown() {
+    const select = document.getElementById('shiftGuardSelect');
+    const activeGuards = guards.filter(g => g.is_active);
+    
+    select.innerHTML = '<option value="">-- Select Your Name --</option>' +
+        activeGuards.map(guard => `
+            <option value="${guard.id}">
+                ${guard.name}${guard.badge_id ? ' - ' + guard.badge_id : ''}
+            </option>
+        `).join('');
+}
+
+// Fill Driver Details
+function fillDriverDetails() {
+    const select = document.getElementById('driverSelect');
+    const selectedId = select.value;
+    
+    if (!selectedId) {
+        // Clear form
+        document.getElementById('driverId').value = '';
+        document.getElementById('driverName').value = '';
+        document.getElementById('lorryPlate').value = '';
+        document.getElementById('company').value = '';
+        return;
+    }
+    
+    const driver = drivers.find(d => d.id === selectedId);
+    if (driver) {
+        document.getElementById('driverId').value = driver.driver_id;
+        document.getElementById('driverName').value = driver.name;
+        document.getElementById('lorryPlate').value = driver.lorry_plate;
+        document.getElementById('company').value = driver.company;
+    }
+}
+
+// Search Driver
+function searchDriver() {
+    const searchTerm = document.getElementById('searchDriver').value.toLowerCase();
+    
+    if (searchTerm.length < 2) {
+        updateDriverDropdown();
+        return;
+    }
+    
+    const filteredDrivers = drivers.filter(d => 
+        d.is_active && (
+            d.driver_id.toLowerCase().includes(searchTerm) ||
+            d.name.toLowerCase().includes(searchTerm) ||
+            d.lorry_plate.toLowerCase().includes(searchTerm) ||
+            d.company.toLowerCase().includes(searchTerm)
+        )
+    );
+    
+    const select = document.getElementById('driverSelect');
+    select.innerHTML = '<option value="">-- Search Results --</option>' +
+        filteredDrivers.map(driver => `
+            <option value="${driver.id}">
+                ${driver.name} - ${driver.lorry_plate} (${driver.company})
+            </option>
+        `).join('');
+}
+
+// Handle Check In
+async function handleCheckIn(event) {
+    event.preventDefault();
+    
+    if (!currentShift) {
+        showError('Please start your shift first!');
+        return;
+    }
+    
+    const driverId = document.getElementById('driverId').value;
+    const driverName = document.getElementById('driverName').value;
+    const lorryPlate = document.getElementById('lorryPlate').value.toUpperCase();
+    const company = document.getElementById('company').value;
+    const purpose = document.getElementById('purpose').value;
+    
+    const guard = guards.find(g => g.id === currentShift.guard_id);
+    
+    const logData = {
+        log_id: 'LOG-' + Date.now(),
+        driver_id: null,
+        driver_name: driverName,
+        lorry_plate: lorryPlate,
+        company: company,
+        purpose: purpose,
+        check_in_time: new Date().toISOString(),
+        status: 'in',
+        checked_in_by_guard_id: currentShift.guard_id,
+        checked_in_by_guard_name: guard?.name,
+        guard_shift_id: currentShift.id
+    };
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('visit_logs')
+            .insert([logData])
+            .select();
+            
+        if (error) throw error;
+        
+        // Reset form
+        document.getElementById('checkInForm').reset();
+        document.getElementById('driverSelect').value = '';
+        
+        // Reload data
+        await loadAllData();
+        updateAllUI();
+        
+        alert('✅ Lorry checked in successfully!');
+        
+    } catch (error) {
+        console.error('Error checking in:', error);
+        showError('Failed to check in lorry: ' + error.message);
+    }
+}
+
+// Check Out Lorry
+async function checkOutLorry(logId) {
+    if (!currentShift) {
+        showError('Please start your shift first!');
+        return;
+    }
+    
+    if (!confirm('Check out this lorry?')) return;
+    
+    const guard = guards.find(g => g.id === currentShift.guard_id);
+    
+    try {
+        const { error } = await supabaseClient
+            .from('visit_logs')
+            .update({
+                status: 'out',
+                check_out_time: new Date().toISOString(),
+                checked_out_by_guard_id: currentShift.guard_id,
+                checked_out_by_guard_name: guard?.name
+            })
+            .eq('id', logId);
+            
+        if (error) throw error;
+        
+        await loadAllData();
+        updateAllUI();
+        
+        alert('✅ Lorry checked out successfully!');
+        
+    } catch (error) {
+        console.error('Error checking out:', error);
+        showError('Failed to check out lorry: ' + error.message);
+    }
+}
+
+// Show/Hide Shift Modal
+function showGuardShiftModal() {
+    document.getElementById('shiftModal').classList.add('active');
+    
+    if (currentShift) {
+        const guard = guards.find(g => g.id === currentShift.guard_id);
+        document.getElementById('currentShiftInfo').textContent = 
+            `${guard?.name || 'Guard'} - ${currentShift.shift_type} (Started: ${formatDateTime(currentShift.shift_start)})`;
+        document.getElementById('shiftStartSection').style.display = 'none';
+        document.getElementById('shiftEndSection').style.display = 'block';
+    } else {
+        document.getElementById('shiftStartSection').style.display = 'block';
+        document.getElementById('shiftEndSection').style.display = 'none';
+    }
+}
+
+function closeShiftModal() {
+    document.getElementById('shiftModal').classList.remove('active');
+}
+
+// Start Shift
+async function startShift() {
+    const guardId = document.getElementById('shiftGuardSelect').value;
+    const shiftType = document.getElementById('shiftType').value;
+    const notes = document.getElementById('shiftNotes').value;
+    
+    if (!guardId) {
+        alert('Please select your name!');
+        return;
+    }
+    
+    // Check if guard already has an active shift
+    const existingShift = guardShifts.find(s => s.guard_id === guardId && s.shift_end === null);
+    if (existingShift) {
+        alert('You already have an active shift! Please end it first.');
+        return;
+    }
+    
+    const shiftData = {
+        guard_id: guardId,
+        shift_type: shiftType,
+        shift_start: new Date().toISOString(),
+        notes: notes || null
+    };
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('guard_shifts')
+            .insert([shiftData])
+            .select();
+            
+        if (error) throw error;
+        
+        currentShift = data[0];
+        await loadAllData();
+        updateGuardStatus();
+        updateAllUI();
+        closeShiftModal();
+        
+        alert('✅ Shift started successfully!');
+        
+    } catch (error) {
+        console.error('Error starting shift:', error);
+        alert('Failed to start shift: ' + error.message);
+    }
+}
+
+// End Shift
+async function endShift() {
+    if (!confirm('End your current shift?')) return;
+    
+    try {
+        const { error } = await supabaseClient
+            .from('guard_shifts')
+            .update({ shift_end: new Date().toISOString() })
+            .eq('id', currentShift.id);
+            
+        if (error) throw error;
+        
+        currentShift = null;
+        await loadAllData();
+        updateGuardStatus();
+        updateAllUI();
+        closeShiftModal();
+        
+        alert('✅ Shift ended successfully!');
+        
+    } catch (error) {
+        console.error('Error ending shift:', error);
+        alert('Failed to end shift: ' + error.message);
+    }
+}
+
+// Admin Panel
+let adminClickCount = 0;
+let adminClickTimer = null;
+
+function tripleClickAdminAccess(event) {
+    adminClickCount++;
+    
+    if (adminClickTimer) clearTimeout(adminClickTimer);
+    
+    if (adminClickCount === 3) {
+        const password = prompt('Enter admin password:');
+        if (password === 'admin123') {
+            openAdminPanel();
+        } else {
+            alert('Incorrect password!');
+        }
+        adminClickCount = 0;
+    }
+    
+    adminClickTimer = setTimeout(() => {
+        adminClickCount = 0;
+    }, 1000);
+}
+
+function openAdminPanel() {
+    document.getElementById('adminModal').classList.add('active');
+    loadAdminData();
+}
+
+function closeAdminModal() {
+    document.getElementById('adminModal').classList.remove('active');
+}
+
+function switchAdminTab(tab) {
+    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(tab + 'Tab').classList.add('active');
+    
+    loadAdminData();
+}
+
+async function loadAdminData() {
+    await loadAllData();
+    
+    // Load Guards
+    const guardsBody = document.getElementById('guardsTableBody');
+    guardsBody.innerHTML = guards.map(guard => `
+        <tr>
+            <td>${guard.name}</td>
+            <td>${guard.badge_id || '-'}</td>
+            <td>
+                <span class="status-badge ${guard.is_active ? 'status-out' : 'status-in'}">
+                    ${guard.is_active ? '✅ Active' : '❌ Inactive'}
+                </span>
+            </td>
+            <td>${formatDate(guard.created_at)}</td>
+            <td>
+                <button class="btn btn-secondary" onclick="toggleGuardStatus('${guard.id}', ${!guard.is_active})">
+                    ${guard.is_active ? 'Deactivate' : 'Activate'}
+                </button>
+            </td>
+        </tr>
+    `).join('');
+    
+    // Load Drivers
+    const driversBody = document.getElementById('driversTableBody');
+    driversBody.innerHTML = drivers.map(driver => `
+        <tr>
+            <td>${driver.driver_id}</td>
+            <td>${driver.name}</td>
+            <td>${driver.lorry_plate}</td>
+            <td>${driver.company}</td>
+            <td>${driver.phone || '-'}</td>
+            <td>
+                <button class="btn btn-secondary" onclick="toggleDriverStatus('${driver.id}', ${!driver.is_active})">
+                    ${driver.is_active ? 'Deactivate' : 'Activate'}
+                </button>
+            </td>
+        </tr>
+    `).join('');
+    
+    // Load Logs
+    const logsBody = document.getElementById('logsTableBody');
+    logsBody.innerHTML = visitLogs.map(log => `
+        <tr>
+            <td>${log.log_id}</td>
+            <td>${formatDateTime(log.check_in_time)}</td>
+            <td>${log.check_out_time ? formatDateTime(log.check_out_time) : '-'}</td>
+            <td>${log.driver_name}</td>
+            <td>${log.lorry_plate}</td>
+            <td>
+                <span class="status-badge status-${log.status}">
+                    ${log.status === 'in' ? '🟡 IN' : '✅ OUT'}
+                </span>
+            </td>
+            <td>${log.checked_in_by_guard_name || '-'}</td>
+        </tr>
+    `).join('');
+    
+    // Load Shifts
+    const shiftsBody = document.getElementById('shiftsTableBody');
+    shiftsBody.innerHTML = guardShifts.map(shift => {
+        const guard = guards.find(g => g.id === shift.guard_id);
+        const duration = shift.shift_end 
+            ? calculateDuration(shift.shift_start, shift.shift_end)
+            : 'Active';
+        
+        return `
+            <tr>
+                <td>${guard?.name || 'Unknown'}</td>
+                <td>${shift.shift_type}</td>
+                <td>${formatDateTime(shift.shift_start)}</td>
+                <td>${shift.shift_end ? formatDateTime(shift.shift_end) : 'Active'}</td>
+                <td>${duration}</td>
+                <td>${shift.notes || '-'}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// Add Guard
+function showAddGuardForm() {
+    document.getElementById('addGuardForm').style.display = 'block';
+}
+
+function hideAddGuardForm() {
+    document.getElementById('addGuardForm').style.display = 'none';
+    document.getElementById('newGuardName').value = '';
+    document.getElementById('newGuardBadge').value = '';
+}
+
+async function addGuard() {
+    const name = document.getElementById('newGuardName').value.trim();
+    const badgeId = document.getElementById('newGuardBadge').value.trim();
+    
+    if (!name) {
+        alert('Please enter guard name!');
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient
+            .from('guards')
+            .insert([{ name, badge_id: badgeId || null }]);
+            
+        if (error) throw error;
+        
+        hideAddGuardForm();
+        await loadAdminData();
+        updateGuardDropdown();
+        alert('✅ Guard added successfully!');
+        
+    } catch (error) {
+        console.error('Error adding guard:', error);
+        alert('Failed to add guard: ' + error.message);
+    }
+}
+
+async function toggleGuardStatus(guardId, newStatus) {
+    try {
+        const { error } = await supabaseClient
+            .from('guards')
+            .update({ is_active: newStatus })
+            .eq('id', guardId);
+            
+        if (error) throw error;
+        
+        await loadAdminData();
+        updateGuardDropdown();
+        
+    } catch (error) {
+        console.error('Error updating guard:', error);
+        alert('Failed to update guard: ' + error.message);
+    }
+}
+
+// Add Driver
+function showAddDriverForm() {
+    document.getElementById('addDriverForm').style.display = 'block';
+}
+
+function hideAddDriverForm() {
+    document.getElementById('addDriverForm').style.display = 'none';
+    document.getElementById('newDriverId').value = '';
+    document.getElementById('newDriverName').value = '';
+    document.getElementById('newDriverPlate').value = '';
+    document.getElementById('newDriverCompany').value = '';
+    document.getElementById('newDriverPhone').value = '';
+}
+
+async function addDriver() {
+    const driverId = document.getElementById('newDriverId').value.trim();
+    const name = document.getElementById('newDriverName').value.trim();
+    const lorryPlate = document.getElementById('newDriverPlate').value.trim().toUpperCase();
+    const company = document.getElementById('newDriverCompany').value.trim();
+    const phone = document.getElementById('newDriverPhone').value.trim();
+    
+    if (!driverId || !name || !lorryPlate || !company) {
+        alert('Please fill in all required fields!');
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient
+            .from('drivers')
+            .insert([{
+                driver_id: driverId,
+                name,
+                lorry_plate: lorryPlate,
+                company,
+                phone: phone || null
+            }]);
+            
+        if (error) throw error;
+        
+        hideAddDriverForm();
+        await loadAdminData();
+        updateDriverDropdown();
+        alert('✅ Driver added successfully!');
+        
+    } catch (error) {
+        console.error('Error adding driver:', error);
+        alert('Failed to add driver: ' + error.message);
+    }
+}
+
+async function toggleDriverStatus(driverId, newStatus) {
+    try {
+        const { error } = await supabaseClient
+            .from('drivers')
+            .update({ is_active: newStatus })
+            .eq('id', driverId);
+            
+        if (error) throw error;
+        
+        await loadAdminData();
+        updateDriverDropdown();
+        
+    } catch (error) {
+        console.error('Error updating driver:', error);
+        alert('Failed to update driver: ' + error.message);
+    }
+}
+
+// Utility Functions
+function formatDateTime(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleString('en-MY', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-MY', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function calculateDuration(start, end) {
+    const duration = new Date(end) - new Date(start);
+    const hours = Math.floor(duration / (1000 * 60 * 60));
+    const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${minutes}m`;
+}
+
+function showError(message) {
+    const alert = document.getElementById('errorAlert');
+    alert.textContent = '❌ ' + message;
+    alert.style.display = 'flex';
+    setTimeout(() => {
+        alert.style.display = 'none';
+    }, 5000);
+}
+
+// Close modals on outside click
+window.onclick = function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (event.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+}
+</script>
+
 </body>
 </html>
