@@ -494,7 +494,7 @@
         // ========================================
         // IMPORTANT: Replace these with your actual Supabase credentials
         const SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIxOTAsImV4cCI6MjA4NjE5ODE5MH0.bTt1PHWCuRPvtWeFA61t6VqshT9uBIiwiFuMrFu9iGc';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4NDMyMjcsImV4cCI6MjA1MjQxOTIyN30.lFTv09J4hEfCq6RkBRbL7ktVOwSYkfgEvqaCy3OXC3A';
         
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -630,6 +630,7 @@
                             <th>Driver Name</th>
                             <th>Company</th>
                             <th>Purpose</th>
+                            <th>Location</th>
                             <th>Check-in Time</th>
                             <th>Duration</th>
                             <th>Status</th>
@@ -642,6 +643,7 @@
                                 <td>${log.driver_name}</td>
                                 <td>${log.company}</td>
                                 <td>${log.purpose}</td>
+                                <td><strong style="color: var(--pmw-cyan);">${log.location || '-'}</strong></td>
                                 <td>${formatTimeMY(log.check_in_time)}</td>
                                 <td><span class="time-ago">${getTimeAgo(log.check_in_time)}</span></td>
                                 <td><span class="status-badge status-in">IN</span></td>
