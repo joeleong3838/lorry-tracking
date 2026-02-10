@@ -441,6 +441,7 @@
             <button class="nav-btn" onclick="showView('logs')">Logs</button>
             <button class="nav-btn" onclick="showView('reports')">Reports</button>
             <button class="nav-btn" onclick="showView('shift')">Shift</button>
+            <button class="nav-btn" onclick="showView('setup'); initializeConfigView();">⚙️ Setup</button>
         </div>
     </div>
 
@@ -570,6 +571,68 @@
         </div>
     </div>
 
+    <!-- Setup/Configuration View (Hidden by default) -->
+    <div id="setup-view" class="hidden">
+        <div class="container">
+            <div class="card">
+                <h2 style="margin-bottom: 24px;">⚙️ Database Configuration</h2>
+                
+                <div style="background: #dbeafe; padding: 16px; border-radius: 8px; margin-bottom: 24px; color: #1e40af;">
+                    <strong>ℹ️ Current Status:</strong> <span id="config-status">Credentials are configured</span>
+                </div>
+
+                <div class="form-group">
+                    <label>Supabase Project URL:</label>
+                    <input type="text" id="config-supabase-url" placeholder="https://xxxxx.supabase.co" style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e2e8f0;">
+                </div>
+
+                <div class="form-group">
+                    <label>Supabase Anon Key:</label>
+                    <input type="text" id="config-supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width: 100%; padding: 12px; border-radius: 8px; border: 2px solid #e2e8f0;">
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button class="btn btn-primary" onclick="saveConfiguration()">💾 Save Configuration</button>
+                    <button class="btn btn-secondary" onclick="testConfiguration()">🔌 Test Connection</button>
+                    <button class="btn btn-secondary" onclick="loadCurrentConfig()">📋 Load Current</button>
+                </div>
+
+                <div style="margin-top: 32px; padding: 20px; background: #fef2f2; border-radius: 8px; border: 2px solid #fca5a5;">
+                    <h3 style="margin-bottom: 16px; color: #dc2626;">⚠️ IMPORTANT: Database Schema Required</h3>
+                    <p style="margin-bottom: 12px; color: #991b1b; font-weight: 600;">
+                        If you see "Error loading data", you need to run the database schema first!
+                    </p>
+                    <ol style="margin-left: 20px; line-height: 1.8; color: #7f1d1d;">
+                        <li>Go to your Supabase project → <strong>SQL Editor</strong></li>
+                        <li>Open the <strong>database-schema.sql</strong> file provided</li>
+                        <li>Copy ALL the SQL code (entire file)</li>
+                        <li>Paste into SQL Editor and click <strong>RUN</strong></li>
+                        <li>Wait for "Success" message</li>
+                        <li>Refresh this page</li>
+                    </ol>
+                    <p style="margin-top: 12px; font-size: 13px; color: #991b1b;">
+                        📄 The database-schema.sql file was provided with this system. It creates all required tables (guards, drivers, visit_logs, guard_shifts).
+                    </p>
+                </div>
+
+                <div style="margin-top: 32px; padding: 20px; background: #f8fafc; border-radius: 8px;">
+                    <h3 style="margin-bottom: 16px;">📚 Setup Instructions</h3>
+                    <ol style="margin-left: 20px; line-height: 1.8; color: #64748b;">
+                        <li>Go to your Supabase project at <a href="https://supabase.com/dashboard" target="_blank" style="color: #667eea;">supabase.com/dashboard</a></li>
+                        <li>Navigate to <strong>Settings → API</strong></li>
+                        <li>Copy your <strong>Project URL</strong> and <strong>anon/public key</strong></li>
+                        <li>Paste them above and click <strong>Save Configuration</strong></li>
+                        <li>Click <strong>Test Connection</strong> to verify</li>
+                    </ol>
+                </div>
+
+                <div style="margin-top: 24px; padding: 16px; background: #fef3c7; border-radius: 8px; color: #92400e;">
+                    <strong>⚠️ Important:</strong> Configuration is stored in your browser's localStorage. You'll need to configure each device separately.
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Panel (Hidden - access via triple-click on logo) -->
     <div id="admin-panel" class="hidden">
         <div class="admin-indicator">ADMIN MODE</div>
@@ -636,11 +699,7 @@
             <form id="addGuardForm" onsubmit="addGuard(event)">
                 <div class="form-group">
                     <label>Guard Name <span class="required">*</span></label>
-                    <input type="text" name="name" placeholder="Ahmad bin Hassan" required>
-                </div>
-                <div class="form-group">
-                    <label>Badge ID</label>
-                    <input type="text" name="badgeId" placeholder="GRD001">
+                    <input type="text" name="name" placeholder="e.g., Ahmad bin Hassan" required>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 24px;">
                     <button type="button" class="btn btn-secondary" style="flex: 1;" onclick="closeModal('addGuardModal')">Cancel</button>
@@ -725,11 +784,35 @@
         // ============================================
         
         // IMPORTANT: Replace with your Supabase credentials
-        const SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIxOTAsImV4cCI6MjA4NjE5ODE5MH0.bTt1PHWCuRPvtWeFA61t6VqshT9uBIiwiFuMrFu9iGc';
+        // OR configure via the Setup page
+        const DEFAULT_SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
+        const DEFAULT_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIxOTAsImV4cCI6MjA4NjE5ODE5MH0.bTt1PHWCuRPvtWeFA61t6VqshT9uBIiwiFuMrFu9iGc';
+        
+        // Check for stored configuration
+        let SUPABASE_URL = DEFAULT_SUPABASE_URL;
+        let SUPABASE_ANON_KEY = DEFAULT_SUPABASE_ANON_KEY;
+        
+        const storedConfig = localStorage.getItem('supabase_config');
+        if (storedConfig) {
+            try {
+                const config = JSON.parse(storedConfig);
+                SUPABASE_URL = config.url || DEFAULT_SUPABASE_URL;
+                SUPABASE_ANON_KEY = config.key || DEFAULT_SUPABASE_ANON_KEY;
+                console.log('Using stored Supabase configuration');
+            } catch (e) {
+                console.error('Error loading stored config:', e);
+            }
+        }
         
         // Initialize Supabase client
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabaseClient;
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize Supabase:', error);
+            alert('Database connection failed. Please check your configuration in the Setup page.');
+        }
         
         // ============================================
         // STATE MANAGEMENT
@@ -803,6 +886,26 @@
         
         async function loadAllData() {
             try {
+                // Test database connection first
+                const { error: connectionError } = await supabaseClient
+                    .from('guards')
+                    .select('count')
+                    .limit(1);
+                
+                if (connectionError) {
+                    console.error('Database connection error:', connectionError);
+                    
+                    // Check if it's a table not found error
+                    if (connectionError.message.includes('relation') || 
+                        connectionError.message.includes('does not exist') ||
+                        connectionError.code === '42P01') {
+                        showNotification('Database tables not found. Please run the database schema SQL in Supabase first. See Setup tab for instructions.', 'error');
+                    } else {
+                        showNotification('Database connection error. Check your Supabase configuration in the Setup tab.', 'error');
+                    }
+                    return;
+                }
+                
                 await Promise.all([
                     loadDrivers(),
                     loadGuards(),
@@ -811,12 +914,12 @@
                 ]);
             } catch (error) {
                 console.error('Error loading data:', error);
-                showNotification('Error loading data', 'error');
+                showNotification('Error loading data: ' + error.message, 'error');
             }
         }
         
         async function loadDrivers() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('drivers')
                 .select('*')
                 .eq('is_active', true)
@@ -827,7 +930,7 @@
         }
         
         async function loadGuards() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('guards')
                 .select('*')
                 .eq('is_active', true)
@@ -838,7 +941,7 @@
         }
         
         async function loadVisitLogs() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('visit_logs')
                 .select('*')
                 .order('check_in_time', { ascending: false })
@@ -849,7 +952,7 @@
         }
         
         async function loadActiveShifts() {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient
                 .from('guard_shifts')
                 .select(`
                     *,
@@ -1004,7 +1107,6 @@
                     <button class="delete-btn" onclick="deleteGuard('${guard.id}')">×</button>
                     <div class="item-card-header">
                         <h3>${guard.name}</h3>
-                        <p>Badge: ${guard.badge_id || 'N/A'}</p>
                     </div>
                     <div style="margin-top: 16px;">
                         ${activeShifts.some(s => s.guard_id === guard.id) ? 
@@ -1113,7 +1215,6 @@
                     ${activeShifts.map(shift => `
                         <div class="item-card">
                             <h3>${shift.guards.name}</h3>
-                            <p>${shift.guards.badge_id || 'No badge'}</p>
                             <div style="margin-top: 16px;">
                                 <span class="badge badge-${shift.shift_type.toLowerCase()}">${shift.shift_type} Shift</span>
                                 <p style="margin-top: 8px; font-size: 13px; color: #64748b;">
@@ -1174,7 +1275,7 @@
             
             try {
                 const driverId = 'DRV' + Date.now();
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('drivers')
                     .insert([{
                         driver_id: driverId,
@@ -1202,7 +1303,7 @@
             if (!confirm('Delete this driver? This cannot be undone.')) return;
             
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('drivers')
                     .update({ is_active: false })
                     .eq('id', id);
@@ -1226,12 +1327,26 @@
             event.preventDefault();
             const form = event.target;
             const formData = new FormData(form);
+            const guardName = formData.get('name').trim();
+            
+            // Check for duplicate names (case-insensitive)
+            const duplicateGuard = guards.find(
+                g => g.name.toLowerCase() === guardName.toLowerCase()
+            );
+            
+            if (duplicateGuard) {
+                showNotification(
+                    `A guard named "${duplicateGuard.name}" already exists. Please enter a different name or add their first/last name (e.g., "${guardName} Abdullah" or "Ahmad ${guardName}").`,
+                    'error'
+                );
+                return;
+            }
             
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('guards')
                     .insert([{
-                        name: formData.get('name'),
+                        name: guardName,
                         badge_id: formData.get('badgeId') || null
                     }])
                     .select();
@@ -1245,7 +1360,7 @@
                 showNotification('Guard added successfully');
             } catch (error) {
                 console.error('Error adding guard:', error);
-                showNotification('Error adding guard', 'error');
+                showNotification('Error adding guard: ' + error.message, 'error');
             }
         }
         
@@ -1253,7 +1368,7 @@
             if (!confirm('Delete this guard? This cannot be undone.')) return;
             
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('guards')
                     .update({ is_active: false })
                     .eq('id', id);
@@ -1288,7 +1403,7 @@
             }
             
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('guard_shifts')
                     .insert([{
                         guard_id: guardId,
@@ -1335,7 +1450,7 @@
             if (!confirm(`End shift for ${shiftToEnd.guards.name}?`)) return;
             
             try {
-                const { error } = await supabase
+                const { error } = await supabaseClient
                     .from('guard_shifts')
                     .update({ shift_end: new Date().toISOString() })
                     .eq('id', shiftToEnd.id);
@@ -1419,7 +1534,7 @@
                 
                 if (activeLog) {
                     // Check out
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('visit_logs')
                         .update({
                             check_out_time: new Date().toISOString(),
@@ -1434,7 +1549,7 @@
                 } else {
                     // Check in
                     const logId = 'LOG' + Date.now();
-                    const { error } = await supabase
+                    const { error } = await supabaseClient
                         .from('visit_logs')
                         .insert([{
                             log_id: logId,
@@ -1485,7 +1600,7 @@
             
             try {
                 // Load data for date range
-                const { data: logs, error } = await supabase
+                const { data: logs, error } = await supabaseClient
                     .from('visit_logs')
                     .select('*')
                     .gte('check_in_time', startDate)
@@ -1493,7 +1608,7 @@
                 
                 if (error) throw error;
                 
-                const { data: shifts } = await supabase
+                const { data: shifts } = await supabaseClient
                     .from('guard_shifts')
                     .select(`*, guards(name, badge_id)`)
                     .gte('shift_start', startDate)
@@ -1529,7 +1644,7 @@
                 ['Shift Summary Report'],
                 ['Generated:', new Date().toLocaleString()],
                 [''],
-                ['Date', 'Guard', 'Badge ID', 'Shift Type', 'Start Time', 'End Time', 'Duration', 'Visitors Processed', 'Currently On-Site']
+                ['Date', 'Guard', 'Shift Type', 'Start Time', 'End Time', 'Duration', 'Visitors Processed', 'Currently On-Site']
             ];
             
             shifts.forEach(shift => {
@@ -1541,7 +1656,6 @@
                 csv.push([
                     formatDate(shift.shift_start),
                     shift.guards.name,
-                    shift.guards.badge_id || 'N/A',
                     shift.shift_type,
                     formatTime(shift.shift_start),
                     shift.shift_end ? formatTime(shift.shift_end) : 'Ongoing',
@@ -1562,7 +1676,6 @@
                 if (!guardStats[guardId]) {
                     guardStats[guardId] = {
                         name: shift.guards.name,
-                        badgeId: shift.guards.badge_id,
                         totalShifts: 0,
                         totalVisitors: 0,
                         totalHours: 0
@@ -1582,13 +1695,12 @@
                 ['Guard Activity Report'],
                 ['Generated:', new Date().toLocaleString()],
                 [''],
-                ['Guard Name', 'Badge ID', 'Total Shifts', 'Total Visitors Processed', 'Total Hours Worked', 'Avg Visitors/Shift']
+                ['Guard Name', 'Total Shifts', 'Total Visitors Processed', 'Total Hours Worked', 'Avg Visitors/Shift']
             ];
             
             Object.values(guardStats).forEach(stats => {
                 csv.push([
                     stats.name,
-                    stats.badgeId || 'N/A',
                     stats.totalShifts,
                     stats.totalVisitors,
                     stats.totalHours.toFixed(1),
@@ -1747,10 +1859,13 @@
             }
             
             document.querySelectorAll('[id$="-view"]').forEach(v => v.classList.add('hidden'));
-            document.getElementById(viewName + '-view').classList.remove('hidden');
+            document.getElementById(viewName + '-view')?.classList.remove('hidden');
             
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            // Use event from global context or find button by viewName
+            if (window.event && window.event.target) {
+                window.event.target.classList.add('active');
+            }
         }
         
         function openModal(modalId) {
@@ -1768,15 +1883,91 @@
             text.textContent = message;
             notif.className = `notification ${type} show`;
             
+            // Longer timeout for error messages (5 seconds) to read the full message
+            const timeout = type === 'error' ? 5000 : 3000;
+            
             setTimeout(() => {
                 notif.classList.remove('show');
-            }, 3000);
+            }, timeout);
         }
         
         function clearLogFilters() {
             document.getElementById('logDateFilter').value = '';
             updateLogsTable();
         }
+        
+        // ============================================
+        // CONFIGURATION MANAGEMENT
+        // ============================================
+        
+        function loadCurrentConfig() {
+            const url = document.getElementById('config-supabase-url');
+            const key = document.getElementById('config-supabase-key');
+            
+            // Try to load from localStorage first
+            const stored = localStorage.getItem('supabase_config');
+            if (stored) {
+                const config = JSON.parse(stored);
+                url.value = config.url || SUPABASE_URL;
+                key.value = config.key || SUPABASE_ANON_KEY;
+            } else {
+                // Load hardcoded values
+                url.value = SUPABASE_URL;
+                key.value = SUPABASE_ANON_KEY;
+            }
+            
+            showNotification('Current configuration loaded');
+        }
+        
+        function saveConfiguration() {
+            const url = document.getElementById('config-supabase-url').value.trim();
+            const key = document.getElementById('config-supabase-key').value.trim();
+            
+            if (!url || !key) {
+                showNotification('Please enter both URL and API key', 'error');
+                return;
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('supabase_config', JSON.stringify({ url, key }));
+            
+            showNotification('Configuration saved! Please refresh the page for changes to take effect.');
+            document.getElementById('config-status').textContent = 'Credentials saved in browser storage';
+        }
+        
+        async function testConfiguration() {
+            const url = document.getElementById('config-supabase-url').value.trim();
+            const key = document.getElementById('config-supabase-key').value.trim();
+            
+            if (!url || !key) {
+                showNotification('Please enter both URL and API key', 'error');
+                return;
+            }
+            
+            try {
+                const testClient = window.supabase.createClient(url, key);
+                const { data, error } = await testClient.from('guards').select('count');
+                
+                if (error) throw error;
+                
+                showNotification('✅ Connection successful!');
+                document.getElementById('config-status').textContent = 'Connection verified successfully';
+            } catch (error) {
+                showNotification('❌ Connection failed: ' + error.message, 'error');
+                document.getElementById('config-status').textContent = 'Connection failed - check credentials';
+            }
+        }
+        
+        // Initialize configuration on setup view
+        function initializeConfigView() {
+            if (document.getElementById('config-supabase-url')) {
+                loadCurrentConfig();
+            }
+        }
+        
+        // ============================================
+        // CLOSE MODALS AND EVENT LISTENERS
+        // ============================================
         
         // Close modals when clicking outside
         document.querySelectorAll('.modal').forEach(modal => {
