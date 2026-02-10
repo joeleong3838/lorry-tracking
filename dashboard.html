@@ -496,7 +496,9 @@
         const SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4NDMyMjcsImV4cCI6MjA1MjQxOTIyN30.lFTv09J4hEfCq6RkBRbL7ktVOwSYkfgEvqaCy3OXC3A';
         
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        if (typeof supabase === 'undefined') {
+    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 
         // ========================================
         // TIMEZONE CONFIGURATION
