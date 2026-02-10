@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PMW Live Dashboard - Lorry Tracking</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pmw-navy: #2B3E7E;
+            --pmw-cyan: #00A8E1;
+            --pmw-dark: #1a2850;
+            --pmw-light: #e8f4f8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, var(--pmw-navy) 0%, var(--pmw-cyan) 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--pmw-cyan);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            height: 60px;
+            width: auto;
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .header-title h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--pmw-navy);
+            letter-spacing: -0.5px;
+        }
+
+        .header-title p {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .header-right {
+            text-align: right;
+        }
+
+        .last-update {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #16a34a;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 30px 40px;
+        }
+
+        /* Statistics Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .stat-number {
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--pmw-navy) 0%, var(--pmw-cyan) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 16px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tables */
+        .section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--pmw-light);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--pmw-navy);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-count {
+            background: var(--pmw-cyan);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--pmw-navy) 0%, var(--pmw-cyan) 100%);
+        }
+
+        th {
+            color: white;
+            font-weight: 700;
+            text-align: left;
+            padding: 16px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 15px;
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: var(--pmw-light);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-in {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-out {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .time-ago {
+            color: #64748b;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        /* Recent Activity Grid */
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .activity-item:hover {
+            background: var(--pmw-light);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-info {
+            flex: 1;
+        }
+
+        .activity-plate {
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--pmw-navy);
+            margin-bottom: 4px;
+        }
+
+        .activity-driver {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .activity-time {
+            text-align: right;
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--pmw-navy);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--pmw-light);
+            border-top-color: var(--pmw-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--pmw-cyan);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--pmw-navy);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+
+            .header-left {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .activity-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-number {
+                font-size: 42px;
+            }
+
+            table {
+                font-size: 13px;
+            }
+
+            th, td {
+                padding: 12px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <!-- PMW Logo - You'll need to replace this with your actual logo path or base64 -->
+            <svg class="logo" width="120" height="50" viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="120" cy="50" rx="115" ry="45" fill="#2B3E7E" stroke="#1a2850" stroke-width="3"/>
+                <path d="M 30 30 Q 50 20, 70 50 Q 50 80, 30 70 Z" fill="#00A8E1"/>
+                <text x="90" y="65" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="white">PMW</text>
+            </svg>
+            <div class="header-title">
+                <h1>🚛 Live Dashboard</h1>
+                <p>PMW International Berhad - Lorry Tracking System</p>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="last-update" id="lastUpdate">Last updated: Loading...</div>
+            <div class="live-indicator">
+                <span class="live-dot"></span>
+                LIVE
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">🚛</div>
+                <div class="stat-number" id="currentlyInCount">-</div>
+                <div class="stat-label">Currently In Premises</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-number" id="todayTotalCount">-</div>
+                <div class="stat-label">Total Check-ins Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👤</div>
+                <div class="stat-number" id="activeGuardName">-</div>
+                <div class="stat-label">Guard On Duty</div>
+            </div>
+        </div>
+
+        <!-- Currently In Premises -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">
+                    🚛 Currently In Premises
+                    <span class="section-count" id="currentInBadge">0</span>
+                </div>
+            </div>
+            <div id="currentlyInTable">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    Loading data...
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-grid">
+            <!-- Recent Check-ins -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        ✅ Recent Check-ins
+                    </div>
+                </div>
+                <div class="activity-list" id="recentCheckIns">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        Loading...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Check-outs -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">
+                        ✅ Recent Check-outs
+                    </div>
+                </div>
+                <div class="activity-list" id="recentCheckOuts">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        Loading...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // SUPABASE CONFIGURATION
+        // ========================================
+        // IMPORTANT: Replace these with your actual Supabase credentials
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ========================================
+        // TIMEZONE CONFIGURATION
+        // ========================================
+        const TIMEZONE = 'Asia/Kuala_Lumpur';
+
+        function formatDateTimeMY(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-MY', {
+                timeZone: TIMEZONE,
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+
+        function formatTimeMY(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-MY', {
+                timeZone: TIMEZONE,
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+        }
+
+        function getTimeAgo(dateString) {
+            if (!dateString) return '';
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins}m ago`;
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return `${diffHours}h ago`;
+            const diffDays = Math.floor(diffHours / 24);
+            return `${diffDays}d ago`;
+        }
+
+        function getTodayDateMY() {
+            const now = new Date(new Date().toLocaleString('en-US', { timeZone: TIMEZONE }));
+            return now.toISOString().split('T')[0];
+        }
+
+        // ========================================
+        // DATA LOADING
+        // ========================================
+        async function loadDashboardData() {
+            try {
+                // Load visit logs
+                const { data: logs, error: logsError } = await supabase
+                    .from('visit_logs')
+                    .select('*')
+                    .order('check_in_time', { ascending: false })
+                    .limit(200);
+
+                if (logsError) throw logsError;
+
+                // Load active guard shift
+                const { data: shifts, error: shiftsError } = await supabase
+                    .from('guard_shifts')
+                    .select('*, guards(name)')
+                    .is('shift_end', null)
+                    .order('shift_start', { ascending: false })
+                    .limit(1);
+
+                if (shiftsError) throw shiftsError;
+
+                // Process data
+                const today = getTodayDateMY();
+                const currentlyIn = logs.filter(l => l.status === 'in');
+                const todayLogs = logs.filter(l => l.check_in_time.startsWith(today));
+                const recentCheckIns = logs.filter(l => l.check_in_time.startsWith(today)).slice(0, 10);
+                const recentCheckOuts = logs.filter(l => l.check_out_time && l.check_out_time.startsWith(today)).slice(0, 10);
+                const activeGuard = shifts && shifts.length > 0 ? shifts[0] : null;
+
+                // Update UI
+                updateStatistics(currentlyIn.length, todayLogs.length, activeGuard);
+                updateCurrentlyInTable(currentlyIn);
+                updateRecentActivity(recentCheckIns, recentCheckOuts);
+                updateLastUpdateTime();
+
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+                showError('Failed to load data. Check console for details.');
+            }
+        }
+
+        // ========================================
+        // UI UPDATES
+        // ========================================
+        function updateStatistics(currentlyIn, todayTotal, activeGuard) {
+            document.getElementById('currentlyInCount').textContent = currentlyIn;
+            document.getElementById('todayTotalCount').textContent = todayTotal;
+            
+            if (activeGuard && activeGuard.guards) {
+                document.getElementById('activeGuardName').textContent = activeGuard.guards.name || 'N/A';
+                document.getElementById('activeGuardName').style.fontSize = '24px';
+            } else {
+                document.getElementById('activeGuardName').textContent = 'No Guard';
+                document.getElementById('activeGuardName').style.fontSize = '24px';
+            }
+        }
+
+        function updateCurrentlyInTable(lorries) {
+            const container = document.getElementById('currentlyInTable');
+            document.getElementById('currentInBadge').textContent = lorries.length;
+
+            if (lorries.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-text">No lorries currently in premises</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Lorry Plate</th>
+                            <th>Driver Name</th>
+                            <th>Company</th>
+                            <th>Purpose</th>
+                            <th>Check-in Time</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${lorries.map(log => `
+                            <tr>
+                                <td><strong>${log.lorry_plate}</strong></td>
+                                <td>${log.driver_name}</td>
+                                <td>${log.company}</td>
+                                <td>${log.purpose}</td>
+                                <td>${formatTimeMY(log.check_in_time)}</td>
+                                <td><span class="time-ago">${getTimeAgo(log.check_in_time)}</span></td>
+                                <td><span class="status-badge status-in">IN</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        function updateRecentActivity(checkIns, checkOuts) {
+            const checkInsContainer = document.getElementById('recentCheckIns');
+            const checkOutsContainer = document.getElementById('recentCheckOuts');
+
+            // Recent Check-ins
+            if (checkIns.length === 0) {
+                checkInsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-text">No check-ins today</div>
+                    </div>
+                `;
+            } else {
+                checkInsContainer.innerHTML = checkIns.map(log => `
+                    <div class="activity-item">
+                        <div class="activity-info">
+                            <div class="activity-plate">${log.lorry_plate}</div>
+                            <div class="activity-driver">${log.driver_name} - ${log.company}</div>
+                        </div>
+                        <div class="activity-time">
+                            ${formatTimeMY(log.check_in_time)}<br>
+                            <span class="time-ago">${getTimeAgo(log.check_in_time)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Recent Check-outs
+            if (checkOuts.length === 0) {
+                checkOutsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-text">No check-outs today</div>
+                    </div>
+                `;
+            } else {
+                checkOutsContainer.innerHTML = checkOuts.map(log => `
+                    <div class="activity-item">
+                        <div class="activity-info">
+                            <div class="activity-plate">${log.lorry_plate}</div>
+                            <div class="activity-driver">${log.driver_name} - ${log.company}</div>
+                        </div>
+                        <div class="activity-time">
+                            ${formatTimeMY(log.check_out_time)}<br>
+                            <span class="time-ago">${getTimeAgo(log.check_out_time)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function updateLastUpdateTime() {
+            const now = new Date().toLocaleString('en-MY', {
+                timeZone: TIMEZONE,
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            document.getElementById('lastUpdate').textContent = `Last updated: ${now}`;
+        }
+
+        function showError(message) {
+            const containers = ['currentlyInTable', 'recentCheckIns', 'recentCheckOuts'];
+            containers.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">⚠️</div>
+                            <div class="empty-state-text">${message}</div>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // ========================================
+        // AUTO-REFRESH
+        // ========================================
+        // Refresh every 10 seconds
+        setInterval(loadDashboardData, 10000);
+
+        // Initial load
+        window.addEventListener('DOMContentLoaded', function() {
+            // Check if Supabase credentials are configured
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
+                showError('Please configure your Supabase credentials in the dashboard.html file');
+                return;
+            }
+            
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>
