@@ -847,8 +847,29 @@
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">Purpose of Visit</label>
-                    <input type="text" class="form-input" id="purpose" required>
+                    <label class="form-label">Purpose of Visit *</label>
+                    <select class="form-select" id="purpose" required>
+                        <option value="">-- Select Purpose --</option>
+                        <option value="Loading Poles">Loading Poles</option>
+                        <option value="Cement">Cement</option>
+                        <option value="Sand & Chipping">Sand & Chipping</option>
+                        <option value="Store">Store</option>
+                        <option value="Maintenance">Maintenance</option>
+                        <option value="Scrap & Garbage">Scrap & Garbage</option>
+                        <option value="Construction Works">Construction Works</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Location *</label>
+                    <select class="form-select" id="location" required>
+                        <option value="">-- Select Location --</option>
+                        <option value="F1">F1</option>
+                        <option value="F2">F2</option>
+                        <option value="F3">F3</option>
+                        <option value="F4">F4</option>
+                    </select>
                 </div>
                 
                 <button type="submit" class="btn btn-success" style="width: 100%;">
@@ -871,6 +892,7 @@
                             <th>Lorry Plate</th>
                             <th>Company</th>
                             <th>Purpose</th>
+                            <th>Location</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -938,12 +960,13 @@
             </div>
             
             <div class="form-group">
-                <label class="form-label">Shift Type</label>
-                <select class="form-select" id="shiftType">
-                    <option value="Day">Day Shift</option>
-                    <option value="Night">Night Shift</option>
-                </select>
-            </div>
+               <div class="form-group">
+                   <label class="form-label">Shift Type</label>
+                   <select class="form-select" id="shiftType">
+                       <option value="7am - 7pm">7am - 7pm</option>
+                       <option value="7pm - 7am">7pm - 7am</option>
+                   </select>
+               </div>
             
             <div class="form-group">
                 <label class="form-label">Notes (Optional)</label>
@@ -1022,10 +1045,6 @@
             </button>
             <div id="addDriverForm" style="display: none; margin-bottom: 20px; padding: 20px; background: #f7fafc; border-radius: 8px;">
                 <h4 style="margin-bottom: 16px;">Register New Driver</h4>
-                <div class="form-group">
-                    <label class="form-label">Driver ID</label>
-                    <input type="text" class="form-input" id="newDriverId">
-                </div>
                 <div class="form-group">
                     <label class="form-label">Driver Name</label>
                     <input type="text" class="form-input" id="newDriverName">
@@ -1288,19 +1307,20 @@ function updateActiveTable() {
     }
 
     tbody.innerHTML = activeLogs.map(log => `
-        <tr>
-            <td>${formatDateTime(log.check_in_time)}</td>
-            <td>${log.driver_name}</td>
-            <td>${log.lorry_plate}</td>
-            <td>${log.company}</td>
-            <td>${log.purpose}</td>
-            <td>
-                <button class="btn btn-danger" onclick="checkOutLorry('${log.id}')">
-                    🚪 Check Out
-                </button>
-            </td>
-        </tr>
-    `).join('');
+    <tr>
+        <td>${formatDateTime(log.check_in_time)}</td>
+        <td>${log.driver_name}</td>
+        <td>${log.lorry_plate}</td>
+        <td>${log.company}</td>
+        <td>${log.purpose}</td>
+        <td><strong>${log.location || '-'}</strong></td>  // ✅ ADD THIS
+        <td>
+            <button class="btn btn-danger" onclick="checkOutLorry('${log.id}')">
+                🚪 Check Out
+            </button>
+        </td>
+    </tr>
+`).join('');
 }
 
 // Update History Table
@@ -1428,6 +1448,7 @@ async function handleCheckIn(event) {
     const lorryPlate = document.getElementById('lorryPlate').value.toUpperCase();
     const company = document.getElementById('company').value;
     const purpose = document.getElementById('purpose').value;
+    const location = document.getElementById('location').value;
     
     const guard = guards.find(g => g.id === currentShift.guard_id);
     
@@ -1438,6 +1459,7 @@ async function handleCheckIn(event) {
         lorry_plate: lorryPlate,
         company: company,
         purpose: purpose,
+        location: location,
         check_in_time: new Date().toISOString(),
         status: 'in',
         checked_in_by_guard_id: currentShift.guard_id,
@@ -1727,26 +1749,33 @@ function showAddGuardForm() {
 function hideAddGuardForm() {
     document.getElementById('addGuardForm').style.display = 'none';
     document.getElementById('newGuardName').value = '';
-    document.getElementById('newGuardBadge').value = '';
 }
 
 async function addGuard() {
+    async function addGuard() {
     const name = document.getElementById('newGuardName').value.trim();
-    const badgeId = document.getElementById('newGuardBadge').value.trim();
     
     if (!name) {
         alert('Please enter guard name!');
         return;
     }
     
+    // Check for duplicate name
+    const duplicate = guards.find(g => g.name.toLowerCase() === name.toLowerCase());
+    if (duplicate) {
+        alert(`❌ Duplicate name detected!\n\nA guard named "${duplicate.name}" already exists.\n\nPlease use a unique name or add first/last name (e.g., "Ahmad Hassan")`);
+        return;
+    }
+    
     try {
         const { error } = await supabaseClient
             .from('guards')
-            .insert([{ name, badge_id: badgeId || null }]);
+            .insert([{ name, is_active: true }]);
             
         if (error) throw error;
         
         hideAddGuardForm();
+        await loadAllData();
         await loadAdminData();
         updateGuardDropdown();
         alert('✅ Guard added successfully!');
@@ -1757,24 +1786,6 @@ async function addGuard() {
     }
 }
 
-async function toggleGuardStatus(guardId, newStatus) {
-    try {
-        const { error } = await supabaseClient
-            .from('guards')
-            .update({ is_active: newStatus })
-            .eq('id', guardId);
-            
-        if (error) throw error;
-        
-        await loadAdminData();
-        updateGuardDropdown();
-        
-    } catch (error) {
-        console.error('Error updating guard:', error);
-        alert('Failed to update guard: ' + error.message);
-    }
-}
-
 // Add Driver
 function showAddDriverForm() {
     document.getElementById('addDriverForm').style.display = 'block';
@@ -1782,7 +1793,6 @@ function showAddDriverForm() {
 
 function hideAddDriverForm() {
     document.getElementById('addDriverForm').style.display = 'none';
-    document.getElementById('newDriverId').value = '';
     document.getElementById('newDriverName').value = '';
     document.getElementById('newDriverPlate').value = '';
     document.getElementById('newDriverCompany').value = '';
@@ -1790,14 +1800,21 @@ function hideAddDriverForm() {
 }
 
 async function addDriver() {
-    const driverId = document.getElementById('newDriverId').value.trim();
+    async function addDriver() {
     const name = document.getElementById('newDriverName').value.trim();
     const lorryPlate = document.getElementById('newDriverPlate').value.trim().toUpperCase();
     const company = document.getElementById('newDriverCompany').value.trim();
     const phone = document.getElementById('newDriverPhone').value.trim();
     
-    if (!driverId || !name || !lorryPlate || !company) {
+    if (!name || !lorryPlate || !company) {
         alert('Please fill in all required fields!');
+        return;
+    }
+    
+    // Check for duplicate name
+    const duplicate = drivers.find(d => d.name.toLowerCase() === name.toLowerCase());
+    if (duplicate) {
+        alert(`❌ Duplicate name detected!\n\nA driver named "${duplicate.name}" already exists.\n\nPlease use a unique name or add first/last name (e.g., "John Lee")`);
         return;
     }
     
@@ -1805,16 +1822,18 @@ async function addDriver() {
         const { error } = await supabaseClient
             .from('drivers')
             .insert([{
-                driver_id: driverId,
+                driver_id: 'DRV-' + Date.now(), // Auto-generate
                 name,
                 lorry_plate: lorryPlate,
                 company,
-                phone: phone || null
+                phone: phone || null,
+                is_active: true
             }]);
             
         if (error) throw error;
         
         hideAddDriverForm();
+        await loadAllData();
         await loadAdminData();
         updateDriverDropdown();
         alert('✅ Driver added successfully!');
