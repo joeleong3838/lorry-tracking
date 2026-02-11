@@ -235,48 +235,59 @@
         }
 
         .status-in {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-out {
             background: #dcfce7;
             color: #166534;
         }
 
-        .status-out {
-            background: #dbeafe;
-            color: #1e40af;
+        /* Activity Items */
+        .activity-section {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
-        .time-ago {
-            color: #64748b;
-            font-size: 13px;
-            font-style: italic;
-        }
-
-        /* Recent Activity Grid */
         .activity-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 24px;
         }
 
-        .activity-list {
-            max-height: 400px;
-            overflow-y: auto;
+        .activity-column {
+            background: var(--pmw-light);
+            padding: 24px;
+            border-radius: 12px;
+        }
+
+        .activity-column-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--pmw-navy);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .activity-item {
+            background: white;
             padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.2s;
-        }
-
-        .activity-item:hover {
-            background: var(--pmw-light);
         }
 
         .activity-item:last-child {
-            border-bottom: none;
+            margin-bottom: 0;
         }
 
         .activity-info {
@@ -285,28 +296,33 @@
 
         .activity-plate {
             font-weight: 700;
-            font-size: 16px;
             color: var(--pmw-navy);
+            font-size: 16px;
             margin-bottom: 4px;
         }
 
         .activity-driver {
-            font-size: 14px;
+            font-size: 13px;
             color: #64748b;
         }
 
         .activity-time {
             text-align: right;
             font-size: 14px;
-            color: #64748b;
+            color: #334155;
             font-weight: 600;
+        }
+
+        .time-ago {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
         }
 
         /* Empty State */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
+            padding: 40px;
         }
 
         .empty-state-icon {
@@ -316,55 +332,15 @@
         }
 
         .empty-state-text {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 16px;
+            color: #94a3b8;
         }
 
-        /* Loading State */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--pmw-navy);
-        }
-
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid var(--pmw-light);
-            border-top-color: var(--pmw-cyan);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--pmw-cyan);
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--pmw-navy);
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .header {
                 flex-direction: column;
-                gap: 16px;
                 text-align: center;
+                gap: 16px;
             }
 
             .header-left {
@@ -377,10 +353,6 @@
 
             .activity-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .stat-number {
-                font-size: 42px;
             }
 
             table {
@@ -397,91 +369,85 @@
     <!-- Header -->
     <div class="header">
         <div class="header-left">
-            <!-- PMW Logo - You'll need to replace this with your actual logo path or base64 -->
-            <svg class="logo" width="120" height="50" viewBox="0 0 240 100" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="120" cy="50" rx="115" ry="45" fill="#2B3E7E" stroke="#1a2850" stroke-width="3"/>
-                <path d="M 30 30 Q 50 20, 70 50 Q 50 80, 30 70 Z" fill="#00A8E1"/>
-                <text x="90" y="65" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="white">PMW</text>
-            </svg>
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='15' fill='%232B3E7E'/%3E%3Cpath d='M30 35h10l8 20 8-20h10v30h-8V47l-7 18h-6l-7-18v18h-8V35z' fill='%2300A8E1'/%3E%3C/svg%3E" 
+                 alt="PMW Logo" class="logo">
             <div class="header-title">
-                <h1>🚛 Live Dashboard</h1>
-                <p>PMW International Berhad - Lorry Tracking System</p>
+                <h1>PMW Lorry Tracking</h1>
+                <p>OSHES Management System</p>
             </div>
         </div>
         <div class="header-right">
-            <div class="last-update" id="lastUpdate">Last updated: Loading...</div>
+            <div class="last-update" id="lastUpdate">Last updated: --:--:--</div>
             <div class="live-indicator">
                 <span class="live-dot"></span>
-                LIVE
+                LIVE DASHBOARD
             </div>
         </div>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main Container -->
     <div class="container">
         <!-- Statistics Cards -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon">🚛</div>
-                <div class="stat-number" id="currentlyInCount">-</div>
-                <div class="stat-label">Currently In Premises</div>
+                <div class="stat-number" id="currentlyInCount">0</div>
+                <div class="stat-label">Currently In</div>
             </div>
             <div class="stat-card">
                 <div class="stat-icon">📊</div>
-                <div class="stat-number" id="todayTotalCount">-</div>
-                <div class="stat-label">Total Check-ins Today</div>
+                <div class="stat-number" id="todayTotalCount">0</div>
+                <div class="stat-label">Today's Total</div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">👤</div>
-                <div class="stat-number" id="activeGuardName">-</div>
-                <div class="stat-label">Guard On Duty</div>
+                <div class="stat-icon">👮</div>
+                <div class="stat-number" id="activeGuardName" style="font-size: 24px;">-</div>
+                <div class="stat-label">Active Guard</div>
             </div>
         </div>
 
-        <!-- Currently In Premises -->
+        <!-- Currently In Table -->
         <div class="section">
             <div class="section-header">
                 <div class="section-title">
-                    🚛 Currently In Premises
+                    🚛 Lorries Currently In Premises
                     <span class="section-count" id="currentInBadge">0</span>
                 </div>
             </div>
             <div id="currentlyInTable">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    Loading data...
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-text">Loading...</div>
                 </div>
             </div>
         </div>
 
         <!-- Recent Activity -->
-        <div class="activity-grid">
-            <!-- Recent Check-ins -->
-            <div class="section">
-                <div class="section-header">
-                    <div class="section-title">
-                        ✅ Recent Check-ins
-                    </div>
-                </div>
-                <div class="activity-list" id="recentCheckIns">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        Loading...
-                    </div>
-                </div>
+        <div class="activity-section">
+            <div class="section-header" style="margin-bottom: 24px;">
+                <div class="section-title">📋 Today's Activity</div>
             </div>
-
-            <!-- Recent Check-outs -->
-            <div class="section">
-                <div class="section-header">
-                    <div class="section-title">
-                        ✅ Recent Check-outs
+            <div class="activity-grid">
+                <div class="activity-column">
+                    <div class="activity-column-title">
+                        ⬇️ Recent Check-ins
+                    </div>
+                    <div id="recentCheckIns">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <div class="empty-state-text">Loading...</div>
+                        </div>
                     </div>
                 </div>
-                <div class="activity-list" id="recentCheckOuts">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        Loading...
+                <div class="activity-column">
+                    <div class="activity-column-title">
+                        ⬆️ Recent Check-outs
+                    </div>
+                    <div id="recentCheckOuts">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <div class="empty-state-text">Loading...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -492,33 +458,17 @@
         // ========================================
         // SUPABASE CONFIGURATION
         // ========================================
-        // IMPORTANT: Replace these with your actual Supabase credentials
         const SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4NDMyMjcsImV4cCI6MjA1MjQxOTIyN30.lFTv09J4hEfCq6RkBRbL7ktVOwSYkfgEvqaCy3OXC3A';
-        
-        if (typeof supabase === 'undefined') {
-    var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIxOTAsImV4cCI6MjA4NjE5ODE5MH0.bTt1PHWCuRPvtWeFA61t6VqshT9uBIiwiFuMrFu9iGc';
 
-        // ========================================
-        // TIMEZONE CONFIGURATION
-        // ========================================
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Timezone Configuration (Malaysia Time)
         const TIMEZONE = 'Asia/Kuala_Lumpur';
 
-        function formatDateTimeMY(dateString) {
-            if (!dateString) return '-';
-            const date = new Date(dateString);
-            return date.toLocaleString('en-MY', {
-                timeZone: TIMEZONE,
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            });
-        }
-
+        // ========================================
+        // UTILITY FUNCTIONS
+        // ========================================
         function formatTimeMY(dateString) {
             if (!dateString) return '-';
             const date = new Date(dateString);
