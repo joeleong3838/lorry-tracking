@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -208,6 +207,8 @@
         .nav-logo {
             height: 50px;
             width: auto;
+            cursor: pointer;
+            user-select: none;
         }
         
         .nav-title {
@@ -274,131 +275,172 @@
         /* Stats Cards */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 32px;
         }
         
         .stat-card {
             background: white;
-            padding: 24px;
+            padding: 28px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
             text-align: center;
-            transition: all 0.3s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         
         .stat-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        
+        .stat-card.clickable {
+            cursor: pointer;
+        }
+        
+        .stat-card.clickable:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
         
         .stat-number {
-            font-size: 48px;
+            font-size: 52px;
             font-weight: 800;
-            background: linear-gradient(135deg, var(--pmw-navy) 0%, var(--pmw-cyan) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: var(--pmw-navy);
             margin-bottom: 8px;
         }
         
         .stat-label {
-            color: #64748b;
             font-size: 14px;
+            color: #64748b;
             font-weight: 600;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        /* Forms */
-        .card {
+        /* Form Card */
+        .form-card {
             background: white;
             padding: 32px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
         }
         
-        .card-title {
+        .form-title {
             font-size: 24px;
             font-weight: 800;
-            color: #1a1a2e;
+            color: var(--pmw-navy);
             margin-bottom: 24px;
-            border-bottom: 3px solid var(--pmw-cyan);
-            padding-bottom: 12px;
         }
         
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
         
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        label {
             font-weight: 600;
-            color: #2d3748;
+            font-size: 14px;
+            color: #334155;
         }
         
-        .form-control {
-            width: 100%;
+        input, select, textarea {
             padding: 12px 16px;
             border: 2px solid #e2e8f0;
             border-radius: 8px;
             font-size: 15px;
-            transition: all 0.2s;
+            transition: border-color 0.2s;
+            font-family: inherit;
         }
         
-        .form-control:focus {
+        input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--pmw-cyan);
-            box-shadow: 0 0 0 3px rgba(0, 168, 225, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
         }
         
         .btn {
-            padding: 12px 24px;
+            padding: 12px 32px;
             border: none;
             border-radius: 8px;
-            font-weight: 600;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 15px;
         }
         
-        .btn-success {
-            background: #10b981;
+        .btn-submit {
+            background: linear-gradient(135deg, var(--pmw-cyan) 0%, var(--pmw-navy) 100%);
             color: white;
         }
         
-        .btn-success:hover {
-            background: #059669;
+        .btn-submit:hover {
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         }
         
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
         .btn-danger {
             background: #ef4444;
             color: white;
         }
-        
+
         .btn-danger:hover {
             background: #dc2626;
         }
         
-        .btn-secondary {
-            background: #6b7280;
-            color: white;
+        /* Table */
+        .table-card {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            margin-bottom: 32px;
         }
         
-        .btn-secondary:hover {
-            background: #4b5563;
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
         }
         
-        /* Tables */
+        .table-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--pmw-navy);
+        }
+        
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 16px;
         }
         
         thead {
@@ -409,18 +451,20 @@
             color: white;
             font-weight: 700;
             text-align: left;
-            padding: 12px 16px;
+            padding: 16px;
             font-size: 13px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         td {
-            padding: 12px 16px;
+            padding: 16px;
             border-bottom: 1px solid #e2e8f0;
+            font-size: 15px;
         }
         
         tbody tr:hover {
-            background: #f8fafc;
+            background: var(--pmw-light);
         }
         
         .status-badge {
@@ -429,6 +473,7 @@
             border-radius: 12px;
             font-size: 12px;
             font-weight: 700;
+            text-transform: uppercase;
         }
         
         .status-in {
@@ -441,7 +486,17 @@
             color: #166534;
         }
         
-        /* Modals */
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-inactive {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -450,6 +505,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -461,65 +517,100 @@
         
         .modal-content {
             background: white;
-            padding: 32px;
+            padding: 40px;
             border-radius: 16px;
-            max-width: 1200px;
+            max-width: 600px;
+            width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            width: 90%;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            border-bottom: 3px solid var(--pmw-cyan);
-            padding-bottom: 12px;
-        }
-        
-        .modal-header h2 {
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 800;
-            color: #1a1a2e;
+            color: var(--pmw-navy);
+            margin-bottom: 24px;
         }
         
         .close-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
+            float: right;
+            font-size: 28px;
+            font-weight: 700;
             cursor: pointer;
-            font-weight: 600;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
         
         .close-btn:hover {
-            background: #dc2626;
+            background: #f1f5f9;
+            color: #334155;
         }
         
-        /* Admin Tabs */
+        /* Alert */
+        .alert {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #ef4444;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            z-index: 2000;
+            font-weight: 600;
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Admin Panel Tabs */
         .admin-tabs {
             display: flex;
             gap: 8px;
             margin-bottom: 24px;
             border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0;
         }
         
         .admin-tab {
             padding: 12px 24px;
             background: transparent;
             border: none;
-            border-bottom: 3px solid transparent;
-            cursor: pointer;
+            font-size: 15px;
             font-weight: 600;
             color: #64748b;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
             transition: all 0.2s;
+            margin-bottom: -2px;
         }
         
         .admin-tab.active {
-            color: var(--pmw-navy);
+            color: var(--pmw-cyan);
             border-bottom-color: var(--pmw-cyan);
+        }
+        
+        .admin-tab:hover {
+            color: var(--pmw-navy);
         }
         
         .tab-content {
@@ -530,39 +621,79 @@
             display: block;
         }
         
-        /* Alert */
-        .alert {
-            padding: 16px 24px;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 8px;
-            margin-bottom: 16px;
+        /* Add New Forms */
+        .add-form {
             display: none;
-            align-items: center;
+            background: var(--pmw-light);
+            padding: 24px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .add-form.show {
+            display: block;
+        }
+
+        /* Monthly Report Modal */
+        .report-filters {
+            display: flex;
             gap: 12px;
-            font-weight: 600;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-        
-        /* Loading */
-        .loading {
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .report-summary {
+            background: var(--pmw-light);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+        }
+
+        .summary-item {
             text-align: center;
-            padding: 40px;
+        }
+
+        .summary-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--pmw-navy);
+        }
+
+        .summary-label {
+            font-size: 12px;
             color: #64748b;
-        }
-        
-        .empty-message {
-            text-align: center;
-            padding: 40px;
-            color: #94a3b8;
-            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
         }
         
         @media (max-width: 768px) {
-            .container { padding: 12px; }
-            .nav { padding: 12px 16px; }
-            .form-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .modal-content { width: 95%; padding: 20px; }
+            .nav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .table-card {
+                overflow-x: auto;
+            }
         }
     </style>
 </head>
@@ -574,60 +705,64 @@
 <div id="termsPage">
     <div class="terms-container">
         <div class="terms-header">
-            <h1>🔒 OSHES Lorry Tracking System</h1>
-            <p>Terms & Conditions</p>
+            <h1>📋 Terms & Conditions</h1>
+            <p>PMW Lorry Tracking System - OSHES Management</p>
         </div>
-        
+
         <div class="terms-content">
-            <h2>Overview</h2>
-            <p>Welcome to the PMW OSHES Lorry Tracking System. This system is designed to manage and monitor lorry movements within the premises for safety, security, and operational efficiency.</p>
-            
-            <h2>System Usage</h2>
-            <p>By using this system, you agree to:</p>
+            <h2>1. Purpose & Use</h2>
+            <p>This system is designed exclusively for tracking lorry movements at PMW facilities for Occupational Safety, Health, and Environmental (OSHES) compliance purposes.</p>
+
+            <h2>2. Data Collection</h2>
+            <p>The system collects and stores:</p>
             <ul>
-                <li>Provide accurate and truthful information when logging lorry check-ins and check-outs</li>
-                <li>Use the system only for authorized purposes related to lorry tracking and management</li>
-                <li>Maintain the confidentiality of any sensitive information accessed through this system</li>
-                <li>Report any system issues, errors, or suspicious activities to the system administrator immediately</li>
+                <li>Driver names and contact information</li>
+                <li>Vehicle registration numbers</li>
+                <li>Company details</li>
+                <li>Entry and exit timestamps</li>
+                <li>Purpose of visit and location</li>
+                <li>Security guard information</li>
             </ul>
-            
-            <h2>Data Privacy & Protection</h2>
-            <p><strong>We take data privacy seriously.</strong> All information entered into this system, including driver details, lorry information, and visit logs, is:</p>
+
+            <h2>3. Privacy & Confidentiality</h2>
+            <p>All information collected is:</p>
             <ul>
+                <li>Used solely for security and operational purposes</li>
                 <li>Stored securely in compliance with data protection regulations</li>
-                <li>Used solely for operational purposes related to site security and logistics management</li>
-                <li>Accessible only to authorized personnel</li>
-                <li>Retained in accordance with company data retention policies</li>
+                <li>Accessible only to authorized PMW personnel</li>
+                <li>Not shared with third parties without consent</li>
             </ul>
-            
-            <h2>User Responsibilities</h2>
-            <p>As a user of this system, you are responsible for:</p>
+
+            <h2>4. User Responsibilities</h2>
+            <p><strong>Guards and Operators must:</strong></p>
             <ul>
-                <li>Ensuring all lorry check-ins are recorded accurately and promptly</li>
-                <li>Verifying driver and vehicle information before entry</li>
-                <li>Processing check-outs in a timely manner when lorries leave the premises</li>
-                <li>Following all OSHES (Occupational Safety, Health, Environment & Security) protocols</li>
+                <li>Enter accurate and truthful information</li>
+                <li>Verify driver identity before check-in</li>
+                <li>Maintain confidentiality of system access</li>
+                <li>Report any system issues immediately</li>
+                <li>Not tamper with or delete records</li>
             </ul>
-            
+
             <div class="warning-box">
-                <strong>⚠️ Important Security Notice:</strong> Never share your system access credentials with unauthorized persons. All actions performed under your account are your responsibility.
+                <strong>⚠️ Important:</strong> Unauthorized access, data manipulation, or misuse of this system is strictly prohibited and may result in disciplinary action.
             </div>
-            
-            <h2>System Modifications</h2>
-            <p>PMW reserves the right to modify, update, or discontinue features of this system with or without prior notice. Users will be informed of significant changes through official channels.</p>
-            
-            <h2>Acceptance</h2>
-            <p>By checking the box below and clicking "I ACCEPT AND PROCEED TO SYSTEM", you acknowledge that you have read, understood, and agree to comply with these terms and conditions.</p>
+
+            <h2>5. Data Retention</h2>
+            <p>Visit logs are retained for a minimum of 12 months for compliance and audit purposes, after which they may be archived or deleted in accordance with PMW policies.</p>
+
+            <h2>6. Acceptance</h2>
+            <p>By using this system, you acknowledge that you have read, understood, and agree to comply with these terms and conditions.</p>
         </div>
-        
+
         <div class="terms-footer">
-            <div class="checkbox-container" onclick="toggleCheckbox()">
+            <div class="checkbox-container">
                 <input type="checkbox" id="termsCheckbox">
-                <label for="termsCheckbox">I have read and agree to the Terms and Conditions. I understand my responsibilities as a user of the OSHES Lorry Tracking System.</label>
+                <label for="termsCheckbox">
+                    I have read and agree to the Terms & Conditions
+                </label>
             </div>
-            
-            <button class="accept-btn" id="acceptBtn" disabled onclick="acceptTerms()">
-                I ACCEPT AND PROCEED TO SYSTEM
+            <button class="accept-btn" id="acceptBtn" disabled>
+                Accept & Continue
             </button>
         </div>
     </div>
@@ -641,117 +776,143 @@
         <!-- Navigation -->
         <div class="nav">
             <div class="nav-brand">
-                <svg class="nav-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <rect width="100" height="100" rx="15" fill="url(#gradient)"/>
-                    <path d="M30 35 L50 55 L70 35" stroke="white" stroke-width="8" fill="none" stroke-linecap="round"/>
-                    <circle cx="50" cy="70" r="5" fill="white"/>
-                    <defs>
-                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#00A8E1"/>
-                            <stop offset="100%" style="stop-color:#2B3E7E"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='15' fill='%232B3E7E'/%3E%3Cpath d='M30 35h10l8 20 8-20h10v30h-8V47l-7 18h-6l-7-18v18h-8V35z' fill='%2300A8E1'/%3E%3C/svg%3E" 
+                     alt="PMW Logo" class="nav-logo" id="logoTrigger">
                 <div class="nav-title">
                     <div class="nav-title-main">PMW Lorry Tracking</div>
                     <div class="nav-title-sub">OSHES Management System</div>
                 </div>
             </div>
-            
-            <div class="guard-status" id="guardStatus">
-                <span id="guardStatusText">⏰ No Active Guard</span>
+            <div class="guard-status inactive" id="guardStatus">
+                ⚠️ No Active Guard
             </div>
-            
             <div class="nav-buttons">
                 <button class="nav-btn" onclick="window.location.reload()">🔄 Refresh</button>
                 <button class="nav-btn" onclick="openReportsModal()">📊 Reports</button>
-                <button class="nav-btn btn-primary" onclick="openAdminModal()">⚙️ Admin Panel</button>
             </div>
         </div>
-        
-        <!-- Stats Cards -->
+
+        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card">
-                <div class="stat-number" id="statCurrentlyIn">0</div>
+                <div class="stat-number" id="currentlyIn">0</div>
                 <div class="stat-label">Currently In</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number" id="statTodayTotal">0</div>
+                <div class="stat-number" id="todayTotal">0</div>
                 <div class="stat-label">Today's Total</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number" id="statMonthTotal">0</div>
-                <div class="stat-label">This Month</div>
+            <div class="stat-card clickable" onclick="openMonthlyReport()">
+                <div class="stat-number" id="thisMonth">0</div>
+                <div class="stat-label">This Month (Click to View)</div>
             </div>
         </div>
-        
-        <!-- Alert -->
-        <div class="alert" id="errorAlert"></div>
-        
-        <!-- Check In Form -->
-        <div class="card">
-            <h2 class="card-title">✅ Check In Lorry</h2>
+
+        <!-- Check-in Form -->
+        <div class="form-card">
+            <div class="form-title">📝 Lorry Check-In</div>
             <form id="checkInForm" onsubmit="handleCheckIn(event)">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Guard on Duty *</label>
-                        <select class="form-control" id="guardSelect" required>
-                            <option value="">Select Guard</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
                         <label>Driver *</label>
-                        <select class="form-control" id="driverSelect" required onchange="handleDriverChange()">
+                        <select id="driverSelect" required>
                             <option value="">Select Driver</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Lorry Plate Number *</label>
-                        <input type="text" class="form-control" id="lorryPlate" required readonly>
+                        <label>Purpose *</label>
+                        <input type="text" id="purposeInput" placeholder="e.g., Delivery, Collection" required>
                     </div>
                     <div class="form-group">
-                        <label>Company *</label>
-                        <input type="text" class="form-control" id="company" required readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Purpose of Visit *</label>
-                        <select class="form-control" id="purpose" required>
-                            <option value="">Select Purpose</option>
-                            <option value="Delivery">Delivery</option>
-                            <option value="Collection">Collection</option>
-                            <option value="Maintenance">Maintenance</option>
-                            <option value="Others">Others</option>
+                        <label>Location/Destination *</label>
+                        <select id="locationInput" required>
+                            <option value="">Select Location</option>
+                            <option value="F1">F1</option>
+                            <option value="F2">F2</option>
+                            <option value="F3">F3</option>
+                            <option value="F4">F4</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Location/Destination</label>
-                        <input type="text" class="form-control" id="location" placeholder="e.g., Warehouse A">
+                        <label>Guard on Duty *</label>
+                        <select id="guardSelect" required>
+                            <option value="">Select Guard</option>
+                        </select>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-success">✅ Check In</button>
+                <div class="form-group">
+                    <label>Remarks (Optional)</label>
+                    <textarea id="remarksInput" placeholder="Additional notes..."></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear</button>
+                    <button type="submit" class="btn btn-submit">✅ Check In</button>
+                </div>
             </form>
         </div>
-        
-        <!-- Currently In Table -->
-        <div class="card">
-            <h2 class="card-title">🚛 Currently In Premises</h2>
-            <div id="currentlyInSection"></div>
+
+        <!-- Active Visits Table -->
+        <div class="table-card">
+            <div class="table-header">
+                <div class="table-title">🚛 Currently In Premises</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Lorry Plate</th>
+                        <th>Driver</th>
+                        <th>Company</th>
+                        <th>Purpose</th>
+                        <th>Location</th>
+                        <th>Check-in Time</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="activeVisitsTable">
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: #94a3b8;">No active visits</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
-        
-        <!-- Check Out Section -->
-        <div class="card">
-            <h2 class="card-title">🚪 Check Out Lorry</h2>
-            <div id="checkOutSection"></div>
+
+        <!-- Recent History Table -->
+        <div class="table-card">
+            <div class="table-header">
+                <div class="table-title">📜 Recent History (Last 20)</div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Log ID</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Driver</th>
+                        <th>Lorry Plate</th>
+                        <th>Company</th>
+                        <th>Purpose</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Guard</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable">
+                    <tr>
+                        <td colspan="10" style="text-align: center; color: #94a3b8;">No records</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Admin Modal -->
+<!-- Admin Panel Modal (Hidden by default, triggered by triple-click on logo) -->
 <div id="adminModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 1000px;">
         <div class="modal-header">
-            <h2>⚙️ Admin Panel</h2>
-            <button class="close-btn" onclick="closeAdminModal()">✖ Close</button>
+            <button class="close-btn" onclick="closeAdminPanel()">&times;</button>
+            ⚙️ Admin Panel
         </div>
         
         <div class="admin-tabs">
@@ -762,18 +923,18 @@
         </div>
         
         <!-- Guards Tab -->
-        <div id="guardsTab" class="tab-content active">
-            <button class="btn btn-primary" onclick="showAddGuardForm()" style="margin-bottom: 16px;">+ Add New Guard</button>
+        <div id="tab-guards" class="tab-content active">
+            <button class="btn btn-submit" onclick="showAddGuardForm()" style="margin-bottom: 16px;">+ Add New Guard</button>
             
-            <div id="addGuardForm" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
-                <h3 style="margin-bottom: 12px;">Add New Guard</h3>
+            <div id="addGuardForm" class="add-form">
+                <h3 style="margin-bottom: 16px; color: var(--pmw-navy);">Add New Guard</h3>
                 <div class="form-group">
                     <label>Guard Name *</label>
-                    <input type="text" class="form-control" id="newGuardName" placeholder="e.g., Ahmad Hassan">
+                    <input type="text" id="newGuardName" placeholder="Enter guard name">
                 </div>
-                <div style="display: flex; gap: 8px; margin-top: 12px;">
-                    <button class="btn btn-success" onclick="addGuard()">Save</button>
+                <div class="button-group" style="margin-top: 16px;">
                     <button class="btn btn-secondary" onclick="hideAddGuardForm()">Cancel</button>
+                    <button class="btn btn-submit" onclick="addGuard()">Add Guard</button>
                 </div>
             </div>
             
@@ -792,43 +953,43 @@
         </div>
         
         <!-- Drivers Tab -->
-        <div id="driversTab" class="tab-content">
-            <button class="btn btn-primary" onclick="showAddDriverForm()" style="margin-bottom: 16px;">+ Add New Driver</button>
+        <div id="tab-drivers" class="tab-content">
+            <button class="btn btn-submit" onclick="showAddDriverForm()" style="margin-bottom: 16px;">+ Add New Driver</button>
             
-            <div id="addDriverForm" style="display: none; background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
-                <h3 style="margin-bottom: 12px;">Add New Driver</h3>
+            <div id="addDriverForm" class="add-form">
+                <h3 style="margin-bottom: 16px; color: var(--pmw-navy);">Add New Driver</h3>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Driver Name *</label>
-                        <input type="text" class="form-control" id="newDriverName" placeholder="e.g., John Lee">
+                        <input type="text" id="newDriverName" placeholder="Enter driver name">
                     </div>
                     <div class="form-group">
-                        <label>Lorry Plate Number *</label>
-                        <input type="text" class="form-control" id="newDriverPlate" placeholder="e.g., ABC1234">
+                        <label>Lorry Plate *</label>
+                        <input type="text" id="newDriverPlate" placeholder="e.g., ABC1234">
                     </div>
                     <div class="form-group">
                         <label>Company *</label>
-                        <input type="text" class="form-control" id="newDriverCompany" placeholder="e.g., Acme Logistics">
+                        <input type="text" id="newDriverCompany" placeholder="Enter company name">
                     </div>
                     <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" class="form-control" id="newDriverPhone" placeholder="e.g., 012-3456789">
+                        <label>Phone (Optional)</label>
+                        <input type="text" id="newDriverPhone" placeholder="Enter phone number">
                     </div>
                 </div>
-                <div style="display: flex; gap: 8px; margin-top: 12px;">
-                    <button class="btn btn-success" onclick="addDriver()">Save</button>
+                <div class="button-group" style="margin-top: 16px;">
                     <button class="btn btn-secondary" onclick="hideAddDriverForm()">Cancel</button>
+                    <button class="btn btn-submit" onclick="addDriver()">Add Driver</button>
                 </div>
             </div>
             
             <table>
                 <thead>
                     <tr>
-                        <th>Driver ID</th>
                         <th>Name</th>
                         <th>Lorry Plate</th>
                         <th>Company</th>
                         <th>Phone</th>
+                        <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -836,8 +997,8 @@
             </table>
         </div>
         
-        <!-- Logs Tab -->
-        <div id="logsTab" class="tab-content">
+        <!-- Visit Logs Tab -->
+        <div id="tab-logs" class="tab-content">
             <table>
                 <thead>
                     <tr>
@@ -846,6 +1007,8 @@
                         <th>Check Out</th>
                         <th>Driver</th>
                         <th>Lorry Plate</th>
+                        <th>Purpose</th>
+                        <th>Location</th>
                         <th>Status</th>
                         <th>Guard</th>
                     </tr>
@@ -854,15 +1017,15 @@
             </table>
         </div>
         
-        <!-- Shifts Tab -->
-        <div id="shiftsTab" class="tab-content">
+        <!-- Guard Shifts Tab -->
+        <div id="tab-shifts" class="tab-content">
             <table>
                 <thead>
                     <tr>
                         <th>Guard</th>
                         <th>Shift Type</th>
-                        <th>Start Time</th>
-                        <th>End Time</th>
+                        <th>Shift Start</th>
+                        <th>Shift End</th>
                         <th>Duration</th>
                         <th>Notes</th>
                     </tr>
@@ -873,24 +1036,80 @@
     </div>
 </div>
 
+<!-- Monthly Report Modal -->
+<div id="monthlyReportModal" class="modal">
+    <div class="modal-content" style="max-width: 1200px;">
+        <div class="modal-header">
+            <button class="close-btn" onclick="closeMonthlyReport()">&times;</button>
+            📊 Monthly Report
+        </div>
+        
+        <div class="report-filters">
+            <div class="filter-group">
+                <label>Month</label>
+                <input type="month" id="reportMonth" value="">
+            </div>
+            <div class="filter-group">
+                <button class="btn btn-submit" onclick="loadMonthlyReport()">Load Report</button>
+            </div>
+        </div>
+
+        <div class="report-summary">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-number" id="monthlyTotalVisits">0</div>
+                    <div class="summary-label">Total Visits</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number" id="monthlyUniqueDrivers">0</div>
+                    <div class="summary-label">Unique Drivers</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number" id="monthlyUniqueCompanies">0</div>
+                    <div class="summary-label">Companies</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <button class="btn btn-submit" onclick="exportMonthlyToExcel()">📥 Export to Excel</button>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Driver</th>
+                    <th>Lorry Plate</th>
+                    <th>Company</th>
+                    <th>Purpose</th>
+                    <th>Location</th>
+                    <th>Guard</th>
+                </tr>
+            </thead>
+            <tbody id="monthlyReportTable"></tbody>
+        </table>
+    </div>
+</div>
+
 <!-- Reports Modal -->
 <div id="reportsModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>📊 Reports & Analytics</h2>
-            <button class="close-btn" onclick="closeReportsModal()">✖ Close</button>
+            <button class="close-btn" onclick="closeReportsModal()">&times;</button>
+            📊 Export Reports
         </div>
-        
-        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
-            <button class="btn btn-success" onclick="exportToExcel()">📗 Export Excel</button>
-            <button class="btn btn-danger" onclick="exportToPDF()">📕 Export PDF</button>
-        </div>
-        
-        <div id="reportsContent">
-            <div class="loading">Loading reports...</div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <button class="btn btn-submit" onclick="exportToExcel()">📥 Export to Excel</button>
+            <button class="btn btn-submit" onclick="exportToPDF()">📄 Export to PDF</button>
         </div>
     </div>
 </div>
+
+<!-- Alert -->
+<div id="errorAlert" class="alert"></div>
 
 <script>
 // ========================================
@@ -898,145 +1117,161 @@
 // ========================================
 const SUPABASE_URL = 'https://jgeldbgfmqgynoumkhcn.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnZWxkYmdmbXFneW5vdW1raGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA2MjIxOTAsImV4cCI6MjA4NjE5ODE5MH0.bTt1PHWCuRPvtWeFA61t6VqshT9uBIiwiFuMrFu9iGc';
+
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ========================================
-// GLOBAL STATE
-// ========================================
-let guards = [];
-let drivers = [];
+// Global State
 let visitLogs = [];
+let drivers = [];
+let guards = [];
 let guardShifts = [];
-let activeGuard = null;
+let monthlyReportData = [];
+
+// Triple-click counter for admin panel
+let logoClickCount = 0;
+let logoClickTimer = null;
 
 // ========================================
-// TERMS & CONDITIONS HANDLING
+// INITIALIZATION
 // ========================================
-function toggleCheckbox() {
-    const checkbox = document.getElementById('termsCheckbox');
-    checkbox.checked = !checkbox.checked;
-    updateAcceptButton();
-}
-
-function updateAcceptButton() {
-    const checkbox = document.getElementById('termsCheckbox');
+document.addEventListener('DOMContentLoaded', function() {
+    // Terms & Conditions
+    const termsCheckbox = document.getElementById('termsCheckbox');
     const acceptBtn = document.getElementById('acceptBtn');
-    acceptBtn.disabled = !checkbox.checked;
-}
-
-document.getElementById('termsCheckbox').addEventListener('change', updateAcceptButton);
-
-function acceptTerms() {
-    const checkbox = document.getElementById('termsCheckbox');
-    if (!checkbox.checked) {
-        alert('Please accept the Terms & Conditions to proceed.');
-        return;
-    }
     
-    // Hide terms page
-    document.getElementById('termsPage').style.display = 'none';
+    termsCheckbox.addEventListener('change', function() {
+        acceptBtn.disabled = !this.checked;
+    });
     
-    // Show main app
-    document.getElementById('mainApp').style.display = 'block';
-    
-    // Initialize the app
-    initializeApp();
-}
+    acceptBtn.addEventListener('click', function() {
+        document.getElementById('termsPage').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        loadAllData();
+    });
 
-// ========================================
-// APP INITIALIZATION
-// ========================================
-async function initializeApp() {
-    try {
-        // Check Supabase connection
-        if (SUPABASE_URL === 'YOUR_SUPABASE_URL_HERE' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY_HERE') {
-            showError('Please configure your Supabase credentials in the HTML file');
-            return;
+    // Triple-click logo for admin panel
+    const logo = document.getElementById('logoTrigger');
+    logo.addEventListener('click', function() {
+        logoClickCount++;
+        
+        if (logoClickTimer) {
+            clearTimeout(logoClickTimer);
         }
         
-        // Load all data
-        await loadAllData();
+        if (logoClickCount === 3) {
+            openAdminPanel();
+            logoClickCount = 0;
+        }
         
-        // Update UI
-        updateGuardDropdown();
-        updateDriverDropdown();
+        logoClickTimer = setTimeout(() => {
+            logoClickCount = 0;
+        }, 500); // Reset after 500ms
+    });
+
+    // Set default month for monthly report
+    const today = new Date();
+    const monthInput = document.getElementById('reportMonth');
+    monthInput.value = today.toISOString().slice(0, 7);
+});
+
+// ========================================
+// DATA LOADING
+// ========================================
+async function loadAllData() {
+    try {
+        // Load all data
+        const [logsRes, driversRes, guardsRes, shiftsRes] = await Promise.all([
+            supabaseClient.from('visit_logs').select('*').order('check_in_time', { ascending: false }),
+            supabaseClient.from('drivers').select('*').order('name'),
+            supabaseClient.from('guards').select('*').order('name'),
+            supabaseClient.from('guard_shifts').select('*').order('shift_start', { ascending: false })
+        ]);
+        
+        if (logsRes.error) throw logsRes.error;
+        if (driversRes.error) throw driversRes.error;
+        if (guardsRes.error) throw guardsRes.error;
+        if (shiftsRes.error) throw shiftsRes.error;
+        
+        visitLogs = logsRes.data;
+        drivers = driversRes.data;
+        guards = guardsRes.data;
+        guardShifts = shiftsRes.data;
+        
         updateStats();
-        updateCurrentlyInTable();
-        updateCheckOutSection();
+        updateActiveVisitsTable();
+        updateHistoryTable();
+        updateDriverDropdown();
+        updateGuardDropdown();
         updateGuardStatus();
         
     } catch (error) {
-        console.error('Initialization error:', error);
-        showError('Failed to initialize app: ' + error.message);
-    }
-}
-
-async function loadAllData() {
-    try {
-        // Load Guards
-        const { data: guardsData, error: guardsError } = await supabaseClient
-            .from('guards')
-            .select('*')
-            .order('name');
-        
-        if (guardsError) throw guardsError;
-        guards = guardsData || [];
-        
-        // Load Drivers
-        const { data: driversData, error: driversError } = await supabaseClient
-            .from('drivers')
-            .select('*')
-            .order('name');
-        
-        if (driversError) throw driversError;
-        drivers = driversData || [];
-        
-        // Load Visit Logs
-        const { data: logsData, error: logsError } = await supabaseClient
-            .from('visit_logs')
-            .select('*')
-            .order('check_in_time', { ascending: false })
-            .limit(500);
-        
-        if (logsError) throw logsError;
-        visitLogs = logsData || [];
-        
-        // Load Guard Shifts
-        const { data: shiftsData, error: shiftsError } = await supabaseClient
-            .from('guard_shifts')
-            .select('*')
-            .order('shift_start', { ascending: false })
-            .limit(100);
-        
-        if (shiftsError) throw shiftsError;
-        guardShifts = shiftsData || [];
-        
-        // Get active guard
-        const activeShift = guardShifts.find(s => !s.shift_end);
-        if (activeShift) {
-            activeGuard = guards.find(g => g.id === activeShift.guard_id);
-        }
-        
-    } catch (error) {
         console.error('Error loading data:', error);
-        throw error;
+        showError('Failed to load data: ' + error.message);
     }
 }
 
-// ========================================
-// UI UPDATE FUNCTIONS
-// ========================================
-function updateGuardDropdown() {
-    const select = document.getElementById('guardSelect');
-    const activeGuards = guards.filter(g => g.is_active);
+function updateStats() {
+    const currentlyInCount = visitLogs.filter(log => log.status === 'in').length;
+    const today = new Date().toISOString().split('T')[0];
+    const todayCount = visitLogs.filter(log => log.check_in_time.startsWith(today)).length;
     
-    select.innerHTML = '<option value="">Select Guard</option>' + 
-        activeGuards.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+    // Calculate this month
+    const thisMonth = new Date().toISOString().slice(0, 7);
+    const thisMonthCount = visitLogs.filter(log => log.check_in_time.startsWith(thisMonth)).length;
     
-    // Auto-select if only one active guard
-    if (activeGuards.length === 1) {
-        select.value = activeGuards[0].id;
+    document.getElementById('currentlyIn').textContent = currentlyInCount;
+    document.getElementById('todayTotal').textContent = todayCount;
+    document.getElementById('thisMonth').textContent = thisMonthCount;
+}
+
+function updateActiveVisitsTable() {
+    const tbody = document.getElementById('activeVisitsTable');
+    const activeVisits = visitLogs.filter(log => log.status === 'in');
+    
+    if (activeVisits.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #94a3b8;">No active visits</td></tr>';
+        return;
     }
+    
+    tbody.innerHTML = activeVisits.map(log => `
+        <tr>
+            <td><strong>${log.lorry_plate}</strong></td>
+            <td>${log.driver_name}</td>
+            <td>${log.company}</td>
+            <td>${log.purpose}</td>
+            <td>${log.location || '-'}</td>
+            <td>${formatDateTime(log.check_in_time)}</td>
+            <td><span class="status-badge status-in">IN</span></td>
+            <td>
+                <button class="btn btn-submit" onclick="checkOut('${log.id}')">Check Out</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateHistoryTable() {
+    const tbody = document.getElementById('historyTable');
+    const recentLogs = visitLogs.slice(0, 20);
+    
+    if (recentLogs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #94a3b8;">No records</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = recentLogs.map(log => `
+        <tr>
+            <td>${log.log_id || '-'}</td>
+            <td>${formatDateTime(log.check_in_time)}</td>
+            <td>${log.check_out_time ? formatDateTime(log.check_out_time) : '-'}</td>
+            <td>${log.driver_name}</td>
+            <td>${log.lorry_plate}</td>
+            <td>${log.company}</td>
+            <td>${log.purpose}</td>
+            <td>${log.location || '-'}</td>
+            <td><span class="status-badge status-${log.status}">${log.status.toUpperCase()}</span></td>
+            <td>${log.checked_in_by_guard_name || '-'}</td>
+        </tr>
+    `).join('');
 }
 
 function updateDriverDropdown() {
@@ -1044,177 +1279,95 @@ function updateDriverDropdown() {
     const activeDrivers = drivers.filter(d => d.is_active);
     
     select.innerHTML = '<option value="">Select Driver</option>' + 
-        activeDrivers.map(d => `<option value="${d.id}">${d.name} (${d.lorry_plate})</option>`).join('');
+        activeDrivers.map(d => `<option value="${d.id}">${d.name} - ${d.lorry_plate} (${d.company})</option>`).join('');
 }
 
-function handleDriverChange() {
-    const driverId = document.getElementById('driverSelect').value;
-    if (!driverId) {
-        document.getElementById('lorryPlate').value = '';
-        document.getElementById('company').value = '';
-        return;
-    }
+function updateGuardDropdown() {
+    const select = document.getElementById('guardSelect');
+    const activeGuards = guards.filter(g => g.is_active);
     
-    const driver = drivers.find(d => d.id === driverId);
-    if (driver) {
-        document.getElementById('lorryPlate').value = driver.lorry_plate;
-        document.getElementById('company').value = driver.company;
-    }
-}
-
-function updateStats() {
-    const currentlyIn = visitLogs.filter(l => l.status === 'in').length;
-    const today = new Date().toISOString().split('T')[0];
-    const todayLogs = visitLogs.filter(l => l.check_in_time.startsWith(today));
-    const thisMonth = new Date().toISOString().slice(0, 7);
-    const monthLogs = visitLogs.filter(l => l.check_in_time.startsWith(thisMonth));
-    
-    document.getElementById('statCurrentlyIn').textContent = currentlyIn;
-    document.getElementById('statTodayTotal').textContent = todayLogs.length;
-    document.getElementById('statMonthTotal').textContent = monthLogs.length;
-}
-
-function updateCurrentlyInTable() {
-    const container = document.getElementById('currentlyInSection');
-    const currentlyIn = visitLogs.filter(l => l.status === 'in');
-    
-    if (currentlyIn.length === 0) {
-        container.innerHTML = '<div class="empty-message">No lorries currently in premises</div>';
-        return;
-    }
-    
-    container.innerHTML = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Lorry Plate</th>
-                    <th>Driver</th>
-                    <th>Company</th>
-                    <th>Purpose</th>
-                    <th>Location</th>
-                    <th>Check In Time</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${currentlyIn.map(log => `
-                    <tr>
-                        <td><strong>${log.lorry_plate}</strong></td>
-                        <td>${log.driver_name}</td>
-                        <td>${log.company}</td>
-                        <td>${log.purpose}</td>
-                        <td>${log.location || '-'}</td>
-                        <td>${formatDateTime(log.check_in_time)}</td>
-                        <td><span class="status-badge status-in">IN</span></td>
-                    </tr>
-                `).join('')}
-            </tbody>
-        </table>
-    `;
-}
-
-function updateCheckOutSection() {
-    const container = document.getElementById('checkOutSection');
-    const currentlyIn = visitLogs.filter(l => l.status === 'in');
-    
-    if (currentlyIn.length === 0) {
-        container.innerHTML = '<div class="empty-message">No lorries to check out</div>';
-        return;
-    }
-    
-    container.innerHTML = currentlyIn.map(log => `
-        <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <strong style="font-size: 18px;">${log.lorry_plate}</strong><br>
-                <span style="color: #64748b;">${log.driver_name} - ${log.company}</span>
-            </div>
-            <button class="btn btn-danger" onclick="handleCheckOut('${log.id}')">
-                🚪 Check Out
-            </button>
-        </div>
-    `).join('');
+    select.innerHTML = '<option value="">Select Guard</option>' + 
+        activeGuards.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
 }
 
 function updateGuardStatus() {
-    const statusElement = document.getElementById('guardStatus');
-    const statusText = document.getElementById('guardStatusText');
+    const guardStatus = document.getElementById('guardStatus');
+    const activeShift = guardShifts.find(s => !s.shift_end);
     
-    if (activeGuard) {
-        statusElement.classList.remove('inactive');
-        statusText.textContent = `✅ ${activeGuard.name} on Duty`;
+    if (activeShift) {
+        const guard = guards.find(g => g.id === activeShift.guard_id);
+        if (guard) {
+            guardStatus.className = 'guard-status';
+            guardStatus.innerHTML = `✅ ${guard.name} on Duty`;
+        }
     } else {
-        statusElement.classList.add('inactive');
-        statusText.textContent = '⏰ No Active Guard';
+        guardStatus.className = 'guard-status inactive';
+        guardStatus.innerHTML = '⚠️ No Active Guard';
     }
 }
 
 // ========================================
-// CHECK IN/OUT HANDLERS
+// CHECK-IN/OUT OPERATIONS
 // ========================================
 async function handleCheckIn(event) {
     event.preventDefault();
     
-    const guardId = document.getElementById('guardSelect').value;
     const driverId = document.getElementById('driverSelect').value;
-    const purpose = document.getElementById('purpose').value;
-    const location = document.getElementById('location').value;
+    const purpose = document.getElementById('purposeInput').value.trim();
+    const location = document.getElementById('locationInput').value;
+    const guardId = document.getElementById('guardSelect').value;
+    const remarks = document.getElementById('remarksInput').value.trim();
     
-    if (!guardId || !driverId) {
-        alert('Please select guard and driver');
+    if (!driverId || !purpose || !location || !guardId) {
+        alert('Please fill in all required fields!');
         return;
     }
     
-    const driver = drivers.find(d => d.id === driverId);
-    const guard = guards.find(g => g.id === guardId);
+    const driver = drivers.find(d => d.id === parseInt(driverId));
+    const guard = guards.find(g => g.id === parseInt(guardId));
+    
+    if (!driver || !guard) {
+        alert('Invalid driver or guard selection!');
+        return;
+    }
+    
+    // Generate log ID
+    const today = new Date();
+    const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
+    const countToday = visitLogs.filter(log => log.check_in_time.startsWith(today.toISOString().split('T')[0])).length;
+    const logId = `PMW${dateStr}${String(countToday + 1).padStart(3, '0')}`;
     
     try {
-        // Create visit log
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from('visit_logs')
             .insert([{
-                log_id: 'LOG-' + Date.now(),
-                driver_id: driverId,
+                log_id: logId,
                 driver_name: driver.name,
                 lorry_plate: driver.lorry_plate,
                 company: driver.company,
-                purpose,
-                location: location || null,
+                purpose: purpose,
+                location: location,
                 check_in_time: new Date().toISOString(),
-                checked_in_by_guard_id: guardId,
                 checked_in_by_guard_name: guard.name,
-                status: 'in'
-            }]);
-        
+                status: 'in',
+                remarks: remarks || null
+            }])
+            .select();
+            
         if (error) throw error;
         
-        // Create/update guard shift if needed
-        const activeShift = guardShifts.find(s => !s.shift_end && s.guard_id === guardId);
-        if (!activeShift) {
-            await supabaseClient
-                .from('guard_shifts')
-                .insert([{
-                    guard_id: guardId,
-                    shift_type: 'Regular',
-                    shift_start: new Date().toISOString()
-                }]);
-        }
-        
-        alert('✅ Check-in successful!');
-        document.getElementById('checkInForm').reset();
+        alert(`✅ Check-in successful!\nLog ID: ${logId}`);
+        resetForm();
         await loadAllData();
-        updateStats();
-        updateCurrentlyInTable();
-        updateCheckOutSection();
-        updateGuardStatus();
         
     } catch (error) {
-        console.error('Check-in error:', error);
+        console.error('Error during check-in:', error);
         alert('Failed to check in: ' + error.message);
     }
 }
 
-async function handleCheckOut(logId) {
-    if (!confirm('Confirm check out this lorry?')) return;
+async function checkOut(visitId) {
+    if (!confirm('Confirm check-out for this lorry?')) return;
     
     try {
         const { error } = await supabaseClient
@@ -1223,47 +1376,50 @@ async function handleCheckOut(logId) {
                 check_out_time: new Date().toISOString(),
                 status: 'out'
             })
-            .eq('id', logId);
-        
+            .eq('id', visitId);
+            
         if (error) throw error;
         
         alert('✅ Check-out successful!');
         await loadAllData();
-        updateStats();
-        updateCurrentlyInTable();
-        updateCheckOutSection();
         
     } catch (error) {
-        console.error('Check-out error:', error);
+        console.error('Error during check-out:', error);
         alert('Failed to check out: ' + error.message);
     }
+}
+
+function resetForm() {
+    document.getElementById('checkInForm').reset();
 }
 
 // ========================================
 // ADMIN PANEL
 // ========================================
-function openAdminModal() {
+function openAdminPanel() {
     document.getElementById('adminModal').classList.add('active');
     loadAdminData();
 }
 
-function closeAdminModal() {
+function closeAdminPanel() {
     document.getElementById('adminModal').classList.remove('active');
 }
 
-function switchAdminTab(tab) {
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    
+function switchAdminTab(tabName) {
+    // Update tabs
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
     event.target.classList.add('active');
-    document.getElementById(tab + 'Tab').classList.add('active');
     
-    loadAdminData();
+    // Update content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById('tab-' + tabName).classList.add('active');
 }
 
 async function loadAdminData() {
-    await loadAllData();
-    
     // Load Guards
     const guardsBody = document.getElementById('guardsTableBody');
     guardsBody.innerHTML = guards.map(guard => `
@@ -1271,15 +1427,17 @@ async function loadAdminData() {
             <td>${guard.name}</td>
             <td>${guard.badge_id || '-'}</td>
             <td>
-                <span class="status-badge ${guard.is_active ? 'status-out' : 'status-in'}">
-                    ${guard.is_active ? '✅ Active' : '❌ Inactive'}
+                <span class="status-badge status-${guard.is_active ? 'active' : 'inactive'}">
+                    ${guard.is_active ? 'Active' : 'Inactive'}
                 </span>
             </td>
             <td>${formatDate(guard.created_at)}</td>
             <td>
-                <button class="btn btn-secondary" onclick="toggleGuardStatus('${guard.id}', ${!guard.is_active})">
-                    ${guard.is_active ? 'Deactivate' : 'Activate'}
-                </button>
+                ${guard.is_active 
+                    ? `<button class="btn btn-secondary" onclick="toggleGuardStatus(${guard.id}, false)">Deactivate</button>`
+                    : `<button class="btn btn-submit" onclick="toggleGuardStatus(${guard.id}, true)">Activate</button>`
+                }
+                <button class="btn btn-danger" onclick="deleteGuard(${guard.id})">Delete</button>
             </td>
         </tr>
     `).join('');
@@ -1288,28 +1446,36 @@ async function loadAdminData() {
     const driversBody = document.getElementById('driversTableBody');
     driversBody.innerHTML = drivers.map(driver => `
         <tr>
-            <td>${driver.driver_id}</td>
             <td>${driver.name}</td>
             <td>${driver.lorry_plate}</td>
             <td>${driver.company}</td>
             <td>${driver.phone || '-'}</td>
             <td>
-                <button class="btn btn-secondary" onclick="toggleDriverStatus('${driver.id}', ${!driver.is_active})">
-                    ${driver.is_active ? 'Deactivate' : 'Activate'}
-                </button>
+                <span class="status-badge status-${driver.is_active ? 'active' : 'inactive'}">
+                    ${driver.is_active ? 'Active' : 'Inactive'}
+                </span>
+            </td>
+            <td>
+                ${driver.is_active 
+                    ? `<button class="btn btn-secondary" onclick="toggleDriverStatus(${driver.id}, false)">Deactivate</button>`
+                    : `<button class="btn btn-submit" onclick="toggleDriverStatus(${driver.id}, true)">Activate</button>`
+                }
+                <button class="btn btn-danger" onclick="deleteDriver(${driver.id})">Delete</button>
             </td>
         </tr>
     `).join('');
     
     // Load Logs
     const logsBody = document.getElementById('logsTableBody');
-    logsBody.innerHTML = visitLogs.map(log => `
+    logsBody.innerHTML = visitLogs.slice(0, 50).map(log => `
         <tr>
-            <td>${log.log_id}</td>
+            <td>${log.log_id || '-'}</td>
             <td>${formatDateTime(log.check_in_time)}</td>
             <td>${log.check_out_time ? formatDateTime(log.check_out_time) : '-'}</td>
             <td>${log.driver_name}</td>
             <td>${log.lorry_plate}</td>
+            <td>${log.purpose}</td>
+            <td>${log.location || '-'}</td>
             <td>
                 <span class="status-badge status-${log.status}">
                     ${log.status === 'in' ? '🟡 IN' : '✅ OUT'}
@@ -1342,11 +1508,11 @@ async function loadAdminData() {
 
 // Add Guard
 function showAddGuardForm() {
-    document.getElementById('addGuardForm').style.display = 'block';
+    document.getElementById('addGuardForm').classList.add('show');
 }
 
 function hideAddGuardForm() {
-    document.getElementById('addGuardForm').style.display = 'none';
+    document.getElementById('addGuardForm').classList.remove('show');
     document.getElementById('newGuardName').value = '';
 }
 
@@ -1393,6 +1559,7 @@ async function toggleGuardStatus(guardId, newStatus) {
             
         if (error) throw error;
         
+        await loadAllData();
         await loadAdminData();
         updateGuardDropdown();
         
@@ -1402,13 +1569,37 @@ async function toggleGuardStatus(guardId, newStatus) {
     }
 }
 
+async function deleteGuard(guardId) {
+    if (!confirm('Are you sure you want to delete this guard? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient
+            .from('guards')
+            .delete()
+            .eq('id', guardId);
+            
+        if (error) throw error;
+        
+        await loadAllData();
+        await loadAdminData();
+        updateGuardDropdown();
+        alert('✅ Guard deleted successfully!');
+        
+    } catch (error) {
+        console.error('Error deleting guard:', error);
+        alert('Failed to delete guard: ' + error.message);
+    }
+}
+
 // Add Driver
 function showAddDriverForm() {
-    document.getElementById('addDriverForm').style.display = 'block';
+    document.getElementById('addDriverForm').classList.add('show');
 }
 
 function hideAddDriverForm() {
-    document.getElementById('addDriverForm').style.display = 'none';
+    document.getElementById('addDriverForm').classList.remove('show');
     document.getElementById('newDriverName').value = '';
     document.getElementById('newDriverPlate').value = '';
     document.getElementById('newDriverCompany').value = '';
@@ -1468,6 +1659,7 @@ async function toggleDriverStatus(driverId, newStatus) {
             
         if (error) throw error;
         
+        await loadAllData();
         await loadAdminData();
         updateDriverDropdown();
         
@@ -1475,6 +1667,109 @@ async function toggleDriverStatus(driverId, newStatus) {
         console.error('Error updating driver:', error);
         alert('Failed to update driver: ' + error.message);
     }
+}
+
+async function deleteDriver(driverId) {
+    if (!confirm('Are you sure you want to delete this driver? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient
+            .from('drivers')
+            .delete()
+            .eq('id', driverId);
+            
+        if (error) throw error;
+        
+        await loadAllData();
+        await loadAdminData();
+        updateDriverDropdown();
+        alert('✅ Driver deleted successfully!');
+        
+    } catch (error) {
+        console.error('Error deleting driver:', error);
+        alert('Failed to delete driver: ' + error.message);
+    }
+}
+
+// ========================================
+// MONTHLY REPORT
+// ========================================
+function openMonthlyReport() {
+    document.getElementById('monthlyReportModal').classList.add('active');
+    loadMonthlyReport();
+}
+
+function closeMonthlyReport() {
+    document.getElementById('monthlyReportModal').classList.remove('active');
+}
+
+async function loadMonthlyReport() {
+    const monthInput = document.getElementById('reportMonth').value;
+    
+    if (!monthInput) {
+        alert('Please select a month!');
+        return;
+    }
+    
+    // Filter logs for selected month
+    monthlyReportData = visitLogs.filter(log => log.check_in_time.startsWith(monthInput));
+    
+    // Calculate statistics
+    const totalVisits = monthlyReportData.length;
+    const uniqueDrivers = new Set(monthlyReportData.map(log => log.driver_name)).size;
+    const uniqueCompanies = new Set(monthlyReportData.map(log => log.company)).size;
+    
+    document.getElementById('monthlyTotalVisits').textContent = totalVisits;
+    document.getElementById('monthlyUniqueDrivers').textContent = uniqueDrivers;
+    document.getElementById('monthlyUniqueCompanies').textContent = uniqueCompanies;
+    
+    // Populate table
+    const tbody = document.getElementById('monthlyReportTable');
+    
+    if (monthlyReportData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #94a3b8;">No records for this month</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = monthlyReportData.map(log => `
+        <tr>
+            <td>${formatDate(log.check_in_time)}</td>
+            <td>${formatDateTime(log.check_in_time)}</td>
+            <td>${log.check_out_time ? formatDateTime(log.check_out_time) : '-'}</td>
+            <td>${log.driver_name}</td>
+            <td>${log.lorry_plate}</td>
+            <td>${log.company}</td>
+            <td>${log.purpose}</td>
+            <td>${log.location || '-'}</td>
+            <td>${log.checked_in_by_guard_name || '-'}</td>
+        </tr>
+    `).join('');
+}
+
+function exportMonthlyToExcel() {
+    if (monthlyReportData.length === 0) {
+        alert('No data to export!');
+        return;
+    }
+    
+    const monthInput = document.getElementById('reportMonth').value;
+    const ws = XLSX.utils.json_to_sheet(monthlyReportData.map(log => ({
+        'Date': formatDate(log.check_in_time),
+        'Check In': formatDateTime(log.check_in_time),
+        'Check Out': log.check_out_time ? formatDateTime(log.check_out_time) : 'N/A',
+        'Driver': log.driver_name,
+        'Lorry Plate': log.lorry_plate,
+        'Company': log.company,
+        'Purpose': log.purpose,
+        'Location': log.location || 'N/A',
+        'Guard': log.checked_in_by_guard_name || 'N/A'
+    })));
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Monthly Report');
+    XLSX.writeFile(wb, `PMW_Monthly_Report_${monthInput}.xlsx`);
 }
 
 // ========================================
