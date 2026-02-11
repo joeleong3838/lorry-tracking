@@ -1397,6 +1397,17 @@ function resetForm() {
 // ADMIN PANEL
 // ========================================
 function openAdminPanel() {
+    const password = prompt('🔐 Enter Admin Password:');
+    
+    if (password === null) {
+        return; // User cancelled
+    }
+    
+    if (password !== 'admin123') {
+        alert('❌ Incorrect password!');
+        return;
+    }
+    
     document.getElementById('adminModal').classList.add('active');
     loadAdminData();
 }
@@ -1434,10 +1445,10 @@ async function loadAdminData() {
             <td>${formatDate(guard.created_at)}</td>
             <td>
                 ${guard.is_active 
-                    ? `<button class="btn btn-secondary" onclick="toggleGuardStatus(${guard.id}, false)">Deactivate</button>`
-                    : `<button class="btn btn-submit" onclick="toggleGuardStatus(${guard.id}, true)">Activate</button>`
+                    ? `<button class="btn btn-secondary" data-action="deactivate-guard" data-id="${guard.id}">Deactivate</button>`
+                    : `<button class="btn btn-submit" data-action="activate-guard" data-id="${guard.id}">Activate</button>`
                 }
-                <button class="btn btn-danger" onclick="deleteGuard(${guard.id})">Delete</button>
+                <button class="btn btn-danger" data-action="delete-guard" data-id="${guard.id}">Delete</button>
             </td>
         </tr>
     `).join('');
@@ -1457,13 +1468,16 @@ async function loadAdminData() {
             </td>
             <td>
                 ${driver.is_active 
-                    ? `<button class="btn btn-secondary" onclick="toggleDriverStatus(${driver.id}, false)">Deactivate</button>`
-                    : `<button class="btn btn-submit" onclick="toggleDriverStatus(${driver.id}, true)">Activate</button>`
+                    ? `<button class="btn btn-secondary" data-action="deactivate-driver" data-id="${driver.id}">Deactivate</button>`
+                    : `<button class="btn btn-submit" data-action="activate-driver" data-id="${driver.id}">Activate</button>`
                 }
-                <button class="btn btn-danger" onclick="deleteDriver(${driver.id})">Delete</button>
+                <button class="btn btn-danger" data-action="delete-driver" data-id="${driver.id}">Delete</button>
             </td>
         </tr>
     `).join('');
+    
+    // Attach event listeners
+    attachAdminButtonListeners();
     
     // Load Logs
     const logsBody = document.getElementById('logsTableBody');
@@ -1504,6 +1518,52 @@ async function loadAdminData() {
             </tr>
         `;
     }).join('');
+}
+
+function attachAdminButtonListeners() {
+    // Guard buttons
+    document.querySelectorAll('[data-action="activate-guard"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const guardId = parseInt(this.getAttribute('data-id'));
+            toggleGuardStatus(guardId, true);
+        });
+    });
+    
+    document.querySelectorAll('[data-action="deactivate-guard"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const guardId = parseInt(this.getAttribute('data-id'));
+            toggleGuardStatus(guardId, false);
+        });
+    });
+    
+    document.querySelectorAll('[data-action="delete-guard"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const guardId = parseInt(this.getAttribute('data-id'));
+            deleteGuard(guardId);
+        });
+    });
+    
+    // Driver buttons
+    document.querySelectorAll('[data-action="activate-driver"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const driverId = parseInt(this.getAttribute('data-id'));
+            toggleDriverStatus(driverId, true);
+        });
+    });
+    
+    document.querySelectorAll('[data-action="deactivate-driver"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const driverId = parseInt(this.getAttribute('data-id'));
+            toggleDriverStatus(driverId, false);
+        });
+    });
+    
+    document.querySelectorAll('[data-action="delete-driver"]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const driverId = parseInt(this.getAttribute('data-id'));
+            deleteDriver(driverId);
+        });
+    });
 }
 
 // Add Guard
